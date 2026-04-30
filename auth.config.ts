@@ -8,18 +8,20 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnAuth = nextUrl.pathname.startsWith("/login") || 
-                       nextUrl.pathname.startsWith("/register") ||
-                       nextUrl.pathname.startsWith("/forgot-password");
-      const isOnApp = nextUrl.pathname.startsWith("/dashboard") ||
-                      nextUrl.pathname.startsWith("/(app)");
-      
+      const isOnAuth =
+        nextUrl.pathname.startsWith("/login") ||
+        nextUrl.pathname.startsWith("/register") ||
+        nextUrl.pathname.startsWith("/forgot-password");
+      const isOnApp =
+        nextUrl.pathname.startsWith("/dashboard") ||
+        nextUrl.pathname.startsWith("/(app)");
+
       if (isOnApp) {
         return isLoggedIn;
       } else if (isOnAuth) {
         return !isLoggedIn || true; // Allow both logged in and out users to access auth pages
       }
-      
+
       return true;
     },
   },

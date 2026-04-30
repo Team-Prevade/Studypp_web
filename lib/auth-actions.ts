@@ -4,6 +4,7 @@ import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect";
 
 export async function loginAction(email: string, password: string) {
   try {
@@ -22,6 +23,10 @@ export async function loginAction(email: string, password: string) {
 
     redirect("/dashboard");
   } catch (error) {
+    // Relançar redirect errors
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error("Login error:", error);
     return {
       success: false,
@@ -34,7 +39,7 @@ export async function registerAction(
   nome: string,
   email: string,
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) {
   try {
     // Validações
@@ -90,8 +95,12 @@ export async function registerAction(
       redirect: false,
     });
 
-    redirect("/onboarding");
+    redirect("/dashboard");
   } catch (error) {
+    // Relançar redirect errors
+    if (isRedirectError(error)) {
+      throw error;
+    }
     console.error("Register error:", error);
     return {
       success: false,

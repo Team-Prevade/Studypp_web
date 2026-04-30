@@ -22,7 +22,12 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const result = await registerAction(nome, email, password, confirmPassword);
+      const result = await registerAction(
+        nome,
+        email,
+        password,
+        confirmPassword,
+      );
       if (result && !result.success) {
         setError(result.error);
       }
@@ -43,10 +48,14 @@ export default function RegisterPage() {
 
         <div className="flex-1 flex flex-col justify-center">
           <h1 className="text-6xl font-bold leading-tight mb-8 font-sans">
-            Começa agora<br />a organizar<br />os teus estudos
+            Começa agora
+            <br />a organizar
+            <br />
+            os teus estudos
           </h1>
           <p className="text-lg leading-relaxed text-blue-100 font-light max-w-md">
-            Junte-se a milhares de estudantes que já transformaram a sua forma de estudar.
+            Junte-se a milhares de estudantes que já transformaram a sua forma
+            de estudar.
           </p>
         </div>
 
@@ -72,7 +81,10 @@ export default function RegisterPage() {
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-6 py-12 sm:px-8 lg:px-12 overflow-y-auto">
         <div className="w-full max-w-md">
           {/* Link para login */}
-          <Link href="/login" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8">
+          <Link
+            href="/login"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8"
+          >
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium">Voltar para login</span>
           </Link>
@@ -82,9 +94,7 @@ export default function RegisterPage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Criar conta
             </h2>
-            <p className="text-gray-600">
-              Preencha os dados para se registar.
-            </p>
+            <p className="text-gray-600">Preencha os dados para se registar.</p>
           </div>
 
           {/* Erro Alert */}
@@ -226,7 +236,10 @@ export default function RegisterPage() {
             {/* Já tem conta */}
             <p className="text-center text-gray-600 text-sm mt-6">
               Já tem uma conta?{" "}
-              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link
+                href="/login"
+                className="text-blue-600 hover:text-blue-700 font-medium"
+              >
                 Faça login
               </Link>
             </p>

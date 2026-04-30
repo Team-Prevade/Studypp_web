@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════
+
+enum TipoAvaliacao {
+  TESTE
+  TRABALHO
+  ORAL
+  PARTICIPACAO
+  PROJECTO
+}
+
+enum TipoEvento {
+  TESTE_EXAME
+  ENTREGA_TRABALHO
+  EVENTO_PESSOAL
+  FERIADO
+}
+
+enum PrioridadeTarefa {
+  ALTA
+  MEDIA
+  BAIXA
+}
+
+enum StatusTarefa {
+  PENDENTE
+  CONCLUIDA
+  ATRASADA
+}
+
+enum TipoSessaoEstudo {
+  ESTUDO
+  PAUSA_CURTA
+  PAUSA_LONGA
+}
+
+enum StatusSessaoEstudo {
+  EM_CURSO
+  CONCLUIDA
+  CANCELADA
+}
+
+enum RepetirLembrete {
+  NUNCA
+  DIARIO
+  SEMANAL
+}
+
+enum CategoriaObjectivo {
+  ACADEMICO
+  PESSOAL
+  HABITO
+}
+
+enum StatusObjectivo {
+  ACTIVO
+  CONCLUIDO
+  ABANDONADO
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+
+enum RepetirAula {
+  UMA_VEZ
+  SEMANAL
+  QUINZENAL
+}
+
+// ═══════════════════════════════════════════
+// UTILIZADOR
+// ═══════════════════════════════════════════
+
+model Utilizador {
+  id            String   @id @default(cuid())
+  nome          String
+  email         String   @unique
+  passwordHash  String
+  anoEscolar    String?  // e.g. "10º Ano", "2º Ano Universitário"
+  curso         String?
+  bio           String?
+  avatarUrl     String?
+  onboardingFeito Boolean @default(false)
+  anoLectivoInicio DateTime?
+  anoLectivoFim    DateTime?
+  primeiroDiaSemana DiaSemana @default(SEGUNDA)
+  mostrarFimSemana  Boolean   @default(false)
+  duracaoTarefaPadrao Int     @default(60) // minutes
+  modoAppearance    String    @default("system") // light | dark | system
+  corAcento         String    @default("#185FA5")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // relations
+  disciplinas      Disciplina[]
+  aulas            Aula[]
+  tarefas          Tarefa[]
+  eventos          Evento[]
+  notas            Nota[]
+  apontamentos     Apontamento[]
+  objectivos       Objectivo[]
+  sessoesEstudo    SessaoEstudo[]
+  lembretes        Lembrete[]
+  notificacoes     NotificacaoApp[]
+  preferenciasNotif PreferenciaNotificacao?
+}
+
+// ═══════════════════════════════════════════
+// DISCIPLINAS
+// ═══════════════════════════════════════════
+
+model Disciplina {
+  id          String   @id @default(cuid())
+  utilizadorId String
+  utilizador  Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  nome        String
+  cor         String   // hex color chosen by student e.g. "#185FA5"
+  professor   String?
+  sala        String?
+  notas       String?  // free text notes about the subject
+  ordem       Int      @default(0) // for custom ordering
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // relations
+  aulas        Aula[]
+  tarefas      Tarefa[]
+  avaliacoes   Avaliacao[]
+  apontamentos Apontamento[]
+  sessoesEstudo SessaoEstudo[]
+  eventos      Evento[]
+
+  @@unique([utilizadorId, nome])
+}
+
+// ═══════════════════════════════════════════
+// HORÁRIO
+// ═══════════════════════════════════════════
+
+model Aula {
+  id           String   @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  diaSemana    DiaSemana
+  horaInicio   String   // "08:00"
+  horaFim      String   // "09:30"
+  sala         String?
+  professor    String?  // overrides disciplina.professor if set
+  repetir      RepetirAula @default(SEMANAL)
+  dataInicio   DateTime? // for one-time or quinzenal classes
+  dataFim      DateTime? // optional end date for the recurrence
+  cor          String?  // overrides disciplina.cor if set
+  notas        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([utilizadorId, diaSemana])
+}
+
+// ═══════════════════════════════════════════
+// TAREFAS
+// ═══════════════════════════════════════════
+
+model Tarefa {
+  id           String           @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador       @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String?
+  disciplina   Disciplina?      @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
+  titulo       String
+  descricao    String?
+  prazo        DateTime?
+  prioridade   PrioridadeTarefa @default(MEDIA)
+  status       StatusTarefa     @default(PENDENTE)
+  concluidaEm  DateTime?
+  progresso    Int              @default(0) // 0–100%
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([utilizadorId, status])
+  @@index([utilizadorId, prazo])
+}
+
+// ═══════════════════════════════════════════
+// CALENDÁRIO E EVENTOS
+// ═══════════════════════════════════════════
+
+model Evento {
+  id           String     @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String?
+  disciplina   Disciplina? @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
+  titulo       String
+  tipo         TipoEvento
+  dataInicio   DateTime
+  dataFim      DateTime?  // null = single day event
+  diaInteiro   Boolean    @default(false)
+  notas        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([utilizadorId, dataInicio])
+}
+
+// ═══════════════════════════════════════════
+// NOTAS E AVALIAÇÕES
+// ═══════════════════════════════════════════
+
+model Avaliacao {
+  id           String        @id @default(cuid())
+  utilizadorId String
+  disciplinaId String
+  disciplina   Disciplina    @relation(fields: [disciplinaId], references: [id], onDelete: Cascade)
+  nome         String        // e.g. "Teste 1", "Trabalho de grupo"
+  tipo         TipoAvaliacao
+  data         DateTime
+  nota         Float?        // 0–20, null if not yet graded
+  peso         Float         @default(1.0) // weight for average calculation
+  observacoes  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  nota_rel     Nota?
+
+  @@index([disciplinaId])
+  @@index([utilizadorId, disciplinaId])
+}
+
+model Nota {
+  id           String   @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  avaliacaoId  String   @unique
+  avaliacao    Avaliacao @relation(fields: [avaliacaoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+// ═══════════════════════════════════════════
+// APONTAMENTOS
+// ═══════════════════════════════════════════
+
+model Apontamento {
+  id           String      @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador  @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String?
+  disciplina   Disciplina? @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
+  titulo       String      @default("Sem título")
+  conteudo     String?     // rich text stored as HTML or markdown
+  fixado       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([utilizadorId, updatedAt])
+}
+
+// ═══════════════════════════════════════════
+// OBJECTIVOS
+// ═══════════════════════════════════════════
+
+model Objectivo {
+  id           String             @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador         @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  titulo       String
+  descricao    String?
+  categoria    CategoriaObjectivo
+  prazo        DateTime?
+  status       StatusObjectivo    @default(ACTIVO)
+  concluidoEm  DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  subTarefas   SubTarefaObjectivo[]
+
+  @@index([utilizadorId, status])
+}
+
+model SubTarefaObjectivo {
+  id          String    @id @default(cuid())
+  objectivoId String
+  objectivo   Objectivo @relation(fields: [objectivoId], references: [id], onDelete: Cascade)
+  titulo      String
+  concluida   Boolean   @default(false)
+  concluidaEm DateTime?
+  ordem       Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+// ═══════════════════════════════════════════
+// TEMPORIZADOR DE ESTUDO (POMODORO)
+// ═══════════════════════════════════════════
+
+model SessaoEstudo {
+  id           String             @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador         @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String?
+  disciplina   Disciplina?        @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
+  tipo         TipoSessaoEstudo   @default(ESTUDO)
+  duracaoPrevista Int             // minutes
+  duracaoReal  Int?               // minutes — set on completion
+  status       StatusSessaoEstudo @default(EM_CURSO)
+  iniciadaEm   DateTime           @default(now())
+  terminadaEm  DateTime?
+  notas        String?
+
+  @@index([utilizadorId, iniciadaEm])
+}
+
+// ═══════════════════════════════════════════
+// LEMBRETES
+// ═══════════════════════════════════════════
+
+model Lembrete {
+  id           String          @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador      @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  disciplinaId String?
+  titulo       String
+  dataHora     DateTime
+  repetir      RepetirLembrete @default(NUNCA)
+  notas        String?
+  concluido    Boolean         @default(false)
+  concluidoEm  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([utilizadorId, dataHora])
+}
+
+// ═══════════════════════════════════════════
+// NOTIFICAÇÕES IN-APP
+// ═══════════════════════════════════════════
+
+model NotificacaoApp {
+  id           String     @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  titulo       String
+  mensagem     String
+  tipo         String     // TAREFA | LEMBRETE | OBJECTIVO | SESSAO | SISTEMA
+  lida         Boolean    @default(false)
+  url          String?    // deep link to relevant page
+  createdAt    DateTime   @default(now())
+
+  @@index([utilizadorId, lida])
+  @@index([utilizadorId, createdAt])
+}
+
+// ═══════════════════════════════════════════
+// PREFERÊNCIAS DE NOTIFICAÇÃO
+// ═══════════════════════════════════════════
+
+model PreferenciaNotificacao {
+  id                      String     @id @default(cuid())
+  utilizadorId            String     @unique
+  utilizador              Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+
+  // Tarefas
+  notifTarefasAtivo       Boolean    @default(true)
+  notifTarefasAntecedencia Int       @default(1440) // minutes before deadline (1440 = 1 day)
+  notifTarefasAtrasadas   Boolean    @default(true)
+
+  // Estudo
+  notifEstudoInicio       Boolean    @default(true)
+  notifEstudoFimPausa     Boolean    @default(true)
+  notifEstudoFimSessao    Boolean    @default(true)
+
+  // Objectivos
+  notifObjectivosAtivo    Boolean    @default(true)
+  notifObjectivosDias     Int        @default(3) // days before deadline
+
+  // Lembretes
+  notifLembretesAtivo     Boolean    @default(true)
+
+  // Canal
+  browserNotif            Boolean    @default(false)
+  emailNotif              Boolean    @default(false)
+  emailNotifAddress       String?
+
+  updatedAt               DateTime   @updatedAt
+}

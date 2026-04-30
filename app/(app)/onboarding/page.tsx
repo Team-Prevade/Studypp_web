@@ -16,9 +16,7 @@ export default async function OnboardingPage() {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Bem-vindo, {session.user?.name}! 👋
             </h1>
-            <p className="text-xl text-gray-600">
-              Vamos preparar a sua conta
-            </p>
+            <p className="text-xl text-gray-600">Vamos preparar a sua conta</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -70,9 +68,7 @@ export default async function OnboardingPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 Pronto para Começar?
               </h2>
-              <p className="text-gray-600 mb-4">
-                Vá para o seu dashboard
-              </p>
+              <p className="text-gray-600 mb-4">Vá para o seu dashboard</p>
               <a
                 href="/dashboard"
                 className="block w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-colors text-center"

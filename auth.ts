@@ -9,6 +9,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.name = user.name;
+        token.email = user.email;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email;
+      }
+      return session;
+    },
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -27,7 +43,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.passwordHash
         );
 
-        if (passwordsMatch) return user;
+        if (passwordsMatch) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.nome,
+          };
+        }
 
         return null;
       },

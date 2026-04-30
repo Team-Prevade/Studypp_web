@@ -2,19 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
+import { loginAction } from "@/lib/auth-actions";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    // TODO: Implementar lógica de login
-    setTimeout(() => setIsLoading(false), 1000);
+
+    try {
+      const result = await loginAction(email, password);
+      if (result && !result.success) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError("Erro ao fazer login. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -29,10 +42,15 @@ export default function LoginPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col justify-center">
           <h1 className="text-6xl font-bold leading-tight mb-8 font-sans">
-            A tua escola<br />organizada,<br />ao teu ritmo
+            A tua escola
+            <br />
+            organizada,
+            <br />
+            ao teu ritmo
           </h1>
           <p className="text-lg leading-relaxed text-blue-100 font-light max-w-md">
-            Planifica os teus estudos, acompanha os prazos e liberta a tua mente para o que realmente importa: aprender.
+            Planifica os teus estudos, acompanha os prazos e liberta a tua mente
+            para o que realmente importa: aprender.
           </p>
         </div>
 
@@ -61,22 +79,15 @@ export default function LoginPage() {
           {/* Tabs */}
           <div className="flex gap-8 mb-10 border-b border-gray-200">
             <button
-              onClick={() => setActiveTab("login")}
-              className={`pb-3 text-lg font-medium transition-colors ${
-                activeTab === "login"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              disabled
+              className="pb-3 text-lg font-medium text-blue-600 border-b-2 border-blue-600"
             >
               Entrar
             </button>
             <Link href="/register">
               <button
-                className={`pb-3 text-lg font-medium transition-colors ${
-                  activeTab === "register"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                type="button"
+                className="pb-3 text-lg font-medium transition-colors text-gray-500 hover:text-gray-700"
               >
                 Criar conta
               </button>
@@ -93,6 +104,13 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Erro Alert */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
@@ -107,8 +125,11 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 placeholder="nome@exemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors"
+                disabled={isLoading}
+                className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -135,13 +156,17 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors pr-12"
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={isLoading}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -157,7 +182,8 @@ export default function LoginPage() {
               <input
                 id="remember"
                 type="checkbox"
-                className="w-4 h-4 text-blue-600 bg-blue-50 border border-blue-200 rounded focus:ring-2 focus:ring-blue-600 cursor-pointer"
+                disabled={isLoading}
+                className="w-4 h-4 text-blue-600 bg-blue-50 border border-blue-200 rounded focus:ring-2 focus:ring-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <label
                 htmlFor="remember"
@@ -171,10 +197,19 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Entrando..." : "Entrar na conta"}
-              <span>→</span>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                <>
+                  Entrar na conta
+                  <span>→</span>
+                </>
+              )}
             </button>
           </form>
 
@@ -190,7 +225,8 @@ export default function LoginPage() {
           {/* Google Sign-in */}
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path

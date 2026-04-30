@@ -21,7 +21,16 @@ export async function loginAction(email: string, password: string) {
       };
     }
 
-    redirect("/dashboard");
+    // Check if onboarding is done
+    const user = await prisma.utilizador.findUnique({
+      where: { email },
+    });
+
+    if (!user?.onboardingFeito) {
+      redirect("/onboarding/perfil");
+    } else {
+      redirect("/dashboard");
+    }
   } catch (error) {
     // Relançar redirect errors
     if (isRedirectError(error)) {
@@ -95,7 +104,8 @@ export async function registerAction(
       redirect: false,
     });
 
-    redirect("/dashboard");
+    // Redirect to onboarding
+    redirect("/onboarding/perfil");
   } catch (error) {
     // Relançar redirect errors
     if (isRedirectError(error)) {

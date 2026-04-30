@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
   // TODO: Adicionar dados iniciais de desenvolvimento
-  console.log('Seed database com dados iniciais');
+  console.log("Seed database com dados iniciais");
 }
 
 main()

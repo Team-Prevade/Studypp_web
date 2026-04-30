@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: "Sua área de estudo personalizada",
 };
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

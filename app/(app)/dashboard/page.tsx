@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getDashboardDataAction } from "@/lib/dashboard-actions";
 import { ProfileButton } from "@/components/profile-button";
 import {
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="p-8 text-center">
+      <div className="min-h-screen bg-gray-50 px-6 py-6 text-center">
         <p className="text-red-600">Erro ao carregar dados do dashboard</p>
       </div>
     );
@@ -37,34 +38,50 @@ export default async function DashboardPage() {
 
   const { data } = result;
   const hoje = new Date();
+  const aulasHoje = data.aulasHoje as unknown as Array<{
+    id: string;
+    horaInicio: string;
+    horaFim: string;
+    disciplina: { nome: string; cor: string } | null;
+  }>;
+  const tarefasPendentes = data.tarefasPendentes as unknown as Array<{
+    id: string;
+    descricao: string;
+    prazo: Date | null;
+    status: string;
+    disciplina: { nome: string } | null;
+  }>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-8 py-6 flex items-center justify-between">
+        <div className="px-6 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-1">
               Bom dia, {data.user.nome}!
             </h1>
             <p className="text-gray-600">{formatarDataPT(hoje)}</p>
           </div>
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+            <Link
+              href="/notificacoes"
+              className="relative rounded-lg p-2 transition-colors hover:bg-gray-100"
+            >
               <Bell className="w-6 h-6 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+            </Link>
             <ProfileButton nome={data.user.nome} email={data.user.email} />
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-8">
+      <div className="px-6 py-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Tarefas para hoje */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="rounded-xl border border-gray-200 border-l-4 border-l-blue-500 bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium mb-1">
@@ -79,7 +96,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Próximo teste */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+          <div className="rounded-xl border border-gray-200 border-l-4 border-l-purple-500 bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium mb-1">
@@ -103,7 +120,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Horas de estudo */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-teal-500">
+          <div className="rounded-xl border border-gray-200 border-l-4 border-l-teal-500 bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium mb-1">
@@ -119,7 +136,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Média geral */}
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500">
+          <div className="rounded-xl border border-gray-200 border-l-4 border-l-orange-500 bg-white p-6">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium mb-1">
@@ -137,27 +154,27 @@ export default async function DashboardPage() {
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Horário de hoje */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Horário de hoje
             </h2>
 
-            {data.aulasHoje.length > 0 ? (
+            {aulasHoje.length > 0 ? (
               <div className="space-y-3">
-                {data.aulasHoje.map((aula) => (
+                {aulasHoje.map((aula) => (
                   <div
                     key={aula.id}
                     className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
                   >
                     <div
-                      className="w-1 h-12 rounded-full"
+                      className="h-12 w-1 rounded-full"
                       style={{
                         backgroundColor: aula.disciplina?.cor || "#185FA5",
                       }}
                     ></div>
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900">
-                        {aula.disciplina?.nome}
+                        {aula.disciplina?.nome || "Disciplina"}
                       </p>
                       <p className="text-sm text-gray-600">
                         {formatarHora(aula.horaInicio)} -{" "}
@@ -176,23 +193,23 @@ export default async function DashboardPage() {
           </div>
 
           {/* Próximos prazos */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Próximos prazos
             </h2>
 
-            {data.tarefasPendentes.length > 0 ? (
+            {tarefasPendentes.length > 0 ? (
               <div className="space-y-3">
-                {data.tarefasPendentes.map((tarefa) => (
+                {tarefasPendentes.map((tarefa) => (
                   <div
                     key={tarefa.id}
                     className="p-3 rounded-lg bg-gray-50 border border-gray-200"
                   >
                     <div className="flex items-start gap-2 mb-2">
                       {tarefa.status === "ATRASADA" ? (
-                        <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                       ) : (
-                        <CheckCircle2 className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 line-clamp-2">
@@ -210,7 +227,7 @@ export default async function DashboardPage() {
                           : "text-gray-600"
                       }`}
                     >
-                      {formatarTempoRelativo(tarefa.prazo)}
+                      {tarefa.prazo ? formatarTempoRelativo(tarefa.prazo) : "-"}
                     </p>
                   </div>
                 ))}

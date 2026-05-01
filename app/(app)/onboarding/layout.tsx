@@ -25,11 +25,11 @@ export default function OnboardingLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
         {/* Sidebar */}
-        <div className="w-72 bg-white border-r border-gray-200 shadow-sm">
+        <div className="w-72 bg-white border-r border-gray-200">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">Study++</h1>
@@ -67,9 +67,9 @@ export default function OnboardingLayout({
                   }`}
                 >
                   {isCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                   ) : (
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <Icon className="w-5 h-5 shrink-0" />
                   )}
                   <span className="font-medium text-sm">{step.label}</span>
                   {!isCompleted && !isActive && (
@@ -86,7 +86,7 @@ export default function OnboardingLayout({
           <div className="absolute bottom-6 left-6 right-6">
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
               <p className="text-xs text-blue-700 font-medium">
-                💡 Dica: Pode voltar para alterar qualquer informação depois.
+                Dica: Pode voltar para alterar qualquer informação depois.
               </p>
             </div>
           </div>

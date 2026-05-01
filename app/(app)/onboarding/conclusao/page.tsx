@@ -37,7 +37,7 @@ export default function ConclusaoStep() {
       <div className="text-center max-w-md">
         {/* Success Icon */}
         <div className="mb-8 flex justify-center">
-          <div className="w-24 h-24 bg-gradient-to-br from-green-50 to-blue-50 rounded-full flex items-center justify-center">
+          <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center">
             <CheckCircle2 className="w-16 h-16 text-green-600" />
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function ConclusaoStep() {
         <button
           onClick={handleComplete}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -80,7 +80,7 @@ export default function ConclusaoStep() {
         </button>
 
         {/* Footer message */}
-        <div className="mt-12 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+        <div className="mt-12 p-6 bg-blue-50 rounded-lg border border-blue-100">
           <p className="text-sm text-gray-600">
             <strong className="text-blue-700">Dica:</strong> Pode alterar todas
             estas configurações no seu perfil a qualquer momento.

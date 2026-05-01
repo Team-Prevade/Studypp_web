@@ -14,8 +14,8 @@ export default async function PerfilPage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="min-h-screen bg-gray-50 px-6 py-6">
+        <div className="rounded-xl border border-gray-200 bg-white p-8">
           <h1 className="text-2xl font-bold text-red-600 mb-4">
             Erro ao carregar perfil
           </h1>
@@ -28,7 +28,7 @@ export default async function PerfilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gray-50 px-6 py-6">
       <ProfileView user={result.data} />
     </div>
   );

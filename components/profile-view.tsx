@@ -84,11 +84,11 @@ export function ProfileView({ user }: ProfileViewProps) {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-800"></div>
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="h-32 bg-linear-to-r from-blue-900 via-blue-800 to-indigo-800"></div>
         <div className="px-6 pb-6 -mt-16 relative">
           <div className="flex items-end gap-4">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-lg border-4 border-white">
+            <div className="w-32 h-32 rounded-full bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-lg border-4 border-white">
               <User className="w-16 h-16" />
             </div>
             <div className="flex-1">
@@ -106,8 +106,8 @@ export function ProfileView({ user }: ProfileViewProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-5 h-5 text-blue-600" />
             <span className="text-gray-600 text-sm">Disciplinas</span>
@@ -116,7 +116,7 @@ export function ProfileView({ user }: ProfileViewProps) {
             {user._count?.disciplinas || 0}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-5 h-5 text-purple-600" />
             <span className="text-gray-600 text-sm">Aulas</span>
@@ -125,7 +125,7 @@ export function ProfileView({ user }: ProfileViewProps) {
             {user._count?.aulas || 0}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600" />
             <span className="text-gray-600 text-sm">Tarefas</span>
@@ -134,7 +134,7 @@ export function ProfileView({ user }: ProfileViewProps) {
             {user._count?.tarefas || 0}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-2 mb-2">
             <Mail className="w-5 h-5 text-orange-600" />
             <span className="text-gray-600 text-sm">Notas</span>
@@ -159,7 +159,7 @@ export function ProfileView({ user }: ProfileViewProps) {
       )}
 
       {/* Edit Profile */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
             Informações Pessoais
@@ -244,7 +244,7 @@ export function ProfileView({ user }: ProfileViewProps) {
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Segurança</h2>
           {!editMode && !passwordMode && (

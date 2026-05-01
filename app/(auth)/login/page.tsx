@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-white">
       {/* Coluna Esquerda - Azul */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-b from-[#1e3a8a] via-[#1e3a8a] to-[#254aa8] text-white flex-col justify-between p-16">
+      <div className="hidden lg:flex lg:w-1/2 bg-blue-900 text-white flex-col justify-between p-16">
         {/* Logo */}
         <div className="mb-2">
           <Logo size="md" withText={true} dark={true} />
@@ -56,9 +56,9 @@ export default function LoginPage() {
 
         {/* Testimonial */}
         <div className="flex items-center gap-4 pt-8 border-t border-blue-400 border-opacity-30">
-          <div className="relative w-16 h-16 flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-pink-400 to-purple-600 rounded-full shadow-lg"></div>
-            <div className="absolute inset-1 bg-gradient-to-br from-amber-300 to-pink-500 rounded-full flex items-center justify-center">
+          <div className="relative w-16 h-16 shrink-0">
+            <div className="absolute inset-0 rounded-full bg-blue-700 shadow-sm"></div>
+            <div className="absolute inset-1 rounded-full bg-blue-600 flex items-center justify-center">
               <span className="text-lg font-bold text-white">MJ</span>
             </div>
           </div>
@@ -216,9 +216,7 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="my-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-sm text-gray-500 font-medium">
-              OU CONTINUA COM
-            </span>
+            <span className="text-sm text-gray-500 font-medium">Ou continua com</span>
             <div className="flex-1 h-px bg-gray-200"></div>
           </div>
 

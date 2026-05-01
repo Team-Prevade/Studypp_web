@@ -195,12 +195,12 @@ export function CalendarView({
   const totalEventos = eventos.length + avaliacoes.length + tarefas.length;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       {/* Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-semibold text-gray-900">
               {monthNames[currentMonth]} {currentYear}
             </h1>
             <p className="text-gray-600 text-sm mt-1">
@@ -298,7 +298,7 @@ export function CalendarView({
                 return (
                   <div
                     key={dayIdx}
-                    className={`min-h-32 p-2 rounded-lg border-2 transition-colors ${
+                    className={`min-h-32 p-2 rounded-lg border transition-colors ${
                       day.isCurrentMonth
                         ? "bg-white border-gray-200 hover:border-blue-300"
                         : "bg-gray-50 border-gray-100"

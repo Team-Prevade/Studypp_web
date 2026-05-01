@@ -45,6 +45,3 @@ export default async function NotasPage() {
     </div>
   );
 }
-    </div>
-  );
-}

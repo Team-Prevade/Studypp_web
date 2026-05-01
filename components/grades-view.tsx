@@ -31,14 +31,14 @@ interface GradesViewProps {
 
 const getDisciplinaIcon = (nome: string) => {
   const icons: { [key: string]: string } = {
-    "Matemática": "📐",
-    "Física": "⚛️",
-    "Química": "🧪",
-    "Biologia": "🧬",
-    "Filosofia": "📚",
-    "História": "📜",
-    "Português": "📖",
-    "Inglês": "🌐",
+    Matemática: "📐",
+    Física: "⚛️",
+    Química: "🧪",
+    Biologia: "🧬",
+    Filosofia: "📚",
+    História: "📜",
+    Português: "📖",
+    Inglês: "🌐",
     "Educação Física": "⚽",
     "Educação Visual": "🎨",
   };
@@ -56,7 +56,7 @@ export function GradesView({
   escalaAvaliacao,
 }: GradesViewProps) {
   const [expandedDisciplina, setExpandedDisciplina] = useState<string | null>(
-    null
+    null,
   );
 
   const getGradeColor = (media: number) => {
@@ -99,9 +99,7 @@ export function GradesView({
               <div className="mt-6 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-600"></div>
-                  <span className="text-xs text-gray-600">
-                    Excelente / Bom
-                  </span>
+                  <span className="text-xs text-gray-600">Excelente / Bom</span>
                   <span className="ml-auto text-xs font-semibold text-gray-900">
                     ≥ 14 ({escalaAvaliacao.excelente})
                   </span>
@@ -143,7 +141,9 @@ export function GradesView({
                   className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
                   onClick={() =>
                     setExpandedDisciplina(
-                      expandedDisciplina === disciplina.id ? null : disciplina.id
+                      expandedDisciplina === disciplina.id
+                        ? null
+                        : disciplina.id,
                     )
                   }
                 >
@@ -167,7 +167,9 @@ export function GradesView({
                         </h4>
                         <p className="text-xs text-gray-600">
                           {disciplina.totalNotas} nota
-                          {disciplina.totalNotas !== 1 ? "s registada" : " registada"}
+                          {disciplina.totalNotas !== 1
+                            ? "s registada"
+                            : " registada"}
                           {disciplina.totalNotas !== 1 ? "s" : ""}
                         </p>
                       </div>
@@ -179,7 +181,7 @@ export function GradesView({
                       <div className="flex items-baseline gap-1">
                         <span
                           className={`text-3xl font-bold ${getGradeColor(
-                            disciplina.media
+                            disciplina.media,
                           )}`}
                         >
                           {disciplina.media}
@@ -188,7 +190,7 @@ export function GradesView({
                       </div>
                       <p
                         className={`text-xs font-medium mt-1 ${getGradeColor(
-                          disciplina.media
+                          disciplina.media,
                         )}`}
                       >
                         {getGradeScale(disciplina.media)}
@@ -219,7 +221,7 @@ export function GradesView({
                             </span>
                             <span
                               className={`font-semibold ${getGradeColor(
-                                avaliacao.nota
+                                avaliacao.nota,
                               )}`}
                             >
                               {avaliacao.nota}

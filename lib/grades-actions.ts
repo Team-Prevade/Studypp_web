@@ -44,9 +44,7 @@ export async function getGradesAction() {
     });
 
     const mediasPorDisciplina = disciplinas.map((d) => {
-      const notasDisciplina = avaliacoes.filter(
-        (a) => a.disciplinaId === d.id
-      );
+      const notasDisciplina = avaliacoes.filter((a) => a.disciplinaId === d.id);
       const media =
         notasDisciplina.length > 0
           ? notasDisciplina.reduce((sum, a) => sum + a.nota, 0) /

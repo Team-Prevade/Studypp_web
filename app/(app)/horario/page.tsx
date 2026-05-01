@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getTimetableAction } from "@/lib/timetable-actions";
 import { TimetableView } from "@/components/timetable-view";
-import { getInicioDaSemana } from "@/lib/date-utils";
+import { getDisciplinesAction } from "@/lib/disciplines-actions";
 
 export default async function HorarioPage() {
   const session = await auth();
@@ -12,10 +12,16 @@ export default async function HorarioPage() {
   }
 
   const result = await getTimetableAction(new Date());
+  const disciplinesResult = await getDisciplinesAction();
 
-  if (!result.success || !result.data) {
+  if (
+    !result.success ||
+    !result.data ||
+    !disciplinesResult.success ||
+    !disciplinesResult.data
+  ) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+      <div className="min-h-screen bg-gray-50 px-6 py-6">
         <p className="text-red-600">Erro ao carregar horário</p>
       </div>
     );
@@ -24,11 +30,12 @@ export default async function HorarioPage() {
   const { data } = result;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gray-50 px-6 py-6">
       <TimetableView
         initialStartDate={data.startDate}
         initialAulas={data.aulas}
         horas={data.horas}
+        disciplinas={disciplinesResult.data.disciplinas}
       />
     </div>
   );

@@ -1,10 +1,28 @@
-export default function EstatisticasPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="p-8">
-        <h1 className="text-4xl font-bold text-gray-900">Estatísticas</h1>
-        <p className="text-gray-600 mt-2">Suas estatísticas de estudo</p>
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { getStatisticsAction } from "@/lib/estatisticas-actions";
+import { StatisticsView } from "@/components/statistics-view";
+
+export default async function EstatisticasPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const result = await getStatisticsAction("MES");
+
+  if (!result.success || !result.data) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-6 py-6">
+        <div className="rounded-xl border border-gray-200 bg-white p-8">
+          <p className="text-red-600">
+            {result.error || "Erro ao carregar estatísticas"}
+          </p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return <StatisticsView data={result.data} />;
 }

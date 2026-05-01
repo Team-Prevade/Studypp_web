@@ -38,14 +38,14 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-gradient-to-b from-teal-700 via-teal-600 to-teal-700 text-white overflow-y-auto">
+    <aside className="fixed left-0 top-0 h-screen w-56 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 text-white overflow-y-auto">
       {/* Header */}
-      <div className="p-6 border-b border-teal-600">
+      <div className="p-6 border-b border-blue-700">
         <div className="flex items-center gap-3 mb-2">
           <BookIcon className="w-6 h-6" />
           <h1 className="text-xl font-bold">Study++</h1>
         </div>
-        <p className="text-sm text-teal-100">O teu assistente digital</p>
+        <p className="text-sm text-blue-100">O teu assistente digital</p>
       </div>
 
       {/* Navigation */}
@@ -60,8 +60,8 @@ export function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
-                  ? "bg-white text-teal-700 font-semibold"
-                  : "text-teal-100 hover:bg-teal-600/50"
+                  ? "bg-white text-blue-900 font-semibold"
+                  : "text-blue-100 hover:bg-blue-700/50"
               }`}
             >
               <Icon className="w-5 h-5" />
@@ -75,7 +75,7 @@ export function Sidebar() {
       <div className="absolute bottom-6 left-4 right-4">
         <button
           onClick={() => logoutAction()}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors text-sm font-medium"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-blue-700 hover:bg-blue-600 text-white transition-colors text-sm font-medium"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>

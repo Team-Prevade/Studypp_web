@@ -10,44 +10,64 @@ export default async function CalendarioPage() {
     redirect("/login");
   }
 
-  const hoje = new Date();
-  const result = await getCalendarEventsAction(hoje.getFullYear(), hoje.getMonth());
+  try {
+    const hoje = new Date();
+    const result = await getCalendarEventsAction(
+      hoje.getFullYear(),
+      hoje.getMonth()
+    );
 
-  if (!result.success || !result.data) {
+    const eventos = result.data?.eventos || [];
+    const avaliacoes = result.data?.avaliacoes || [];
+    const tarefas = result.data?.tarefas || [];
+    const month = result.data?.month ?? hoje.getMonth();
+    const year = result.data?.year ?? hoje.getFullYear();
+
+    // Convert dates to proper format
+    const eventosFormatados = eventos.map((e: any) => ({
+      id: e.id,
+      data: typeof e.data === "string" ? new Date(e.data) : e.data,
+      titulo: e.titulo || "Evento sem título",
+      tipo: e.tipo || "EVENTO",
+    }));
+
+    const avaliacoesFormatadas = avaliacoes.map((a: any) => ({
+      id: a.id,
+      data: typeof a.data === "string" ? new Date(a.data) : a.data,
+      tipo: a.tipo || "PROVA",
+      disciplina: a.disciplina || { nome: "Disciplina" },
+    }));
+
+    const tarefasFormatadas = tarefas.map((t: any) => ({
+      id: t.id,
+      prazo: typeof t.prazo === "string" ? new Date(t.prazo) : t.prazo,
+      descricao: t.descricao || "Tarefa sem descrição",
+    }));
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-        <p className="text-red-600">Erro ao carregar calendário</p>
+        <CalendarView
+          eventos={eventosFormatados}
+          avaliacoes={avaliacoesFormatadas}
+          tarefas={tarefasFormatadas}
+          initialMonth={month}
+          initialYear={year}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error("Calendar error:", error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Erro ao carregar calendário
+          </h1>
+          <p className="text-gray-600">
+            Ocorreu um erro ao recuperar os dados. Tente novamente mais tarde.
+          </p>
+        </div>
       </div>
     );
   }
-
-  const { data } = result;
-
-  // Convert dates to proper format
-  const eventos = data.eventos.map((e: any) => ({
-    ...e,
-    data: new Date(e.data),
-  }));
-
-  const avaliacoes = data.avaliacoes.map((a: any) => ({
-    ...a,
-    data: new Date(a.data),
-  }));
-
-  const tarefas = data.tarefas.map((t: any) => ({
-    ...t,
-    prazo: new Date(t.prazo),
-  }));
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
-      <CalendarView
-        eventos={eventos}
-        avaliacoes={avaliacoes}
-        tarefas={tarefas}
-        initialMonth={data.month}
-        initialYear={data.year}
-      />
-    </div>
-  );
 }

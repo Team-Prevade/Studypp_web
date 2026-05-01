@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "File must be an image" }, { status: 400 });
+      return NextResponse.json(
+        { error: "File must be an image" },
+        { status: 400 },
+      );
     }
 
     // Validate file size (max 2MB)

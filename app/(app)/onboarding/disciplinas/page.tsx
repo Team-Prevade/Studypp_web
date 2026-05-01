@@ -109,15 +109,18 @@ export default function DisciplinasStep() {
           Adiciona as tuas disciplinas
         </h1>
         <p className="text-gray-600">
-          Organiza o teu semestre atribuindo uma cor a cada disciplina. Isto ajudará a manter o
-          teu horário e tarefas visualmente distintos.
+          Organiza o teu semestre atribuindo uma cor a cada disciplina. Isto
+          ajudará a manter o teu horário e tarefas visualmente distintos.
         </p>
       </div>
 
       {/* Main Content */}
       <div className="bg-white rounded-lg shadow p-8">
         {/* Add Disciplina Form */}
-        <form onSubmit={handleAddDisciplina} className="mb-10 pb-10 border-b border-gray-200">
+        <form
+          onSubmit={handleAddDisciplina}
+          className="mb-10 pb-10 border-b border-gray-200"
+        >
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-900 mb-2">
               Nome da disciplina
@@ -137,7 +140,9 @@ export default function DisciplinasStep() {
 
           {/* Color Picker */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">Atribuir cor</label>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              Atribuir cor
+            </label>
             <div className="flex gap-2 flex-wrap">
               {PRESET_COLORS.map((color) => (
                 <button
@@ -182,7 +187,9 @@ export default function DisciplinasStep() {
 
           {disciplinas.length === 0 ? (
             <div className="p-8 text-center bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-gray-600 mb-2">Ainda não tem disciplinas adicionadas.</p>
+              <p className="text-gray-600 mb-2">
+                Ainda não tem disciplinas adicionadas.
+              </p>
               <p className="text-sm text-gray-500">
                 Adicione pelo menos uma para continuar (opcional).
               </p>
@@ -199,7 +206,9 @@ export default function DisciplinasStep() {
                       className="w-6 h-6 rounded-full border-2 border-gray-300"
                       style={{ backgroundColor: disciplina.cor }}
                     />
-                    <span className="font-medium text-gray-900">{disciplina.nome}</span>
+                    <span className="font-medium text-gray-900">
+                      {disciplina.nome}
+                    </span>
                   </div>
                   <button
                     type="button"

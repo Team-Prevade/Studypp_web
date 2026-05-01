@@ -15,7 +15,7 @@ export async function updatePerfilAction(nome: string, avatar?: string) {
       where: { email: session.user.email },
       data: {
         nome: nome.trim(),
-        ...(avatar && { avatar }),
+        ...(avatar && { avatarUrl: avatar }),
       },
     });
 

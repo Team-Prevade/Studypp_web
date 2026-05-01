@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight, Plus, X } from "lucide-react";
-import { saveTimetableAction, getDisciplinasAction } from "@/lib/onboarding-actions";
+import {
+  saveTimetableAction,
+  getDisciplinasAction,
+} from "@/lib/onboarding-actions";
 
 interface Disciplina {
   id: string;
@@ -147,8 +150,12 @@ export default function HorarioStep() {
     <div>
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Configura o teu horário</h1>
-        <p className="text-gray-600">Clica nos blocos para atribuir disciplinas.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Configura o teu horário
+        </h1>
+        <p className="text-gray-600">
+          Clica nos blocos para atribuir disciplinas.
+        </p>
       </div>
 
       {/* Content */}
@@ -244,7 +251,9 @@ export default function HorarioStep() {
             {/* Stats */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700">
-                <strong>{gridAulas.length} aula{gridAulas.length !== 1 ? "s" : ""}</strong>{" "}
+                <strong>
+                  {gridAulas.length} aula{gridAulas.length !== 1 ? "s" : ""}
+                </strong>{" "}
                 adicionada{gridAulas.length !== 1 ? "s" : ""}
               </p>
             </div>
@@ -261,7 +270,9 @@ export default function HorarioStep() {
             </h3>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Disciplina</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Disciplina
+              </label>
               <select
                 value={selectedDisciplina}
                 onChange={(e) => setSelectedDisciplina(e.target.value)}

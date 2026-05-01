@@ -43,11 +43,14 @@ export default function ConclusaoStep() {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Tudo pronto! Vamos começar</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Tudo pronto! Vamos começar
+        </h1>
 
         {/* Description */}
         <p className="text-gray-600 mb-8">
-          A tua agenda está configurada e pronta para te ajudar a brilhar este ano.
+          A tua agenda está configurada e pronta para te ajudar a brilhar este
+          ano.
         </p>
 
         {/* Error */}
@@ -79,8 +82,8 @@ export default function ConclusaoStep() {
         {/* Footer message */}
         <div className="mt-12 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
           <p className="text-sm text-gray-600">
-            <strong className="text-blue-700">Dica:</strong> Pode alterar todas estas configurações
-            no seu perfil a qualquer momento.
+            <strong className="text-blue-700">Dica:</strong> Pode alterar todas
+            estas configurações no seu perfil a qualquer momento.
           </p>
         </div>
       </div>

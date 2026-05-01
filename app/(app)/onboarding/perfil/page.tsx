@@ -94,12 +94,17 @@ export default function PerfilStep() {
     <div>
       {/* Header */}
       <div className="mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Como te chamas?</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Como te chamas?
+        </h1>
         <p className="text-gray-600">Vamos personalizar a tua experiência.</p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-8 max-w-2xl">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-lg shadow p-8 max-w-2xl"
+      >
         {/* Avatar Upload */}
         <div className="mb-10">
           <label className="block text-sm font-semibold text-gray-900 mb-4">
@@ -128,7 +133,9 @@ export default function PerfilStep() {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
               >
                 <Upload className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-700">Carregar foto</span>
+                <span className="text-sm font-medium text-blue-700">
+                  Carregar foto
+                </span>
               </label>
               <input
                 id="avatar-input"
@@ -146,7 +153,10 @@ export default function PerfilStep() {
 
         {/* Name Input */}
         <div className="mb-8">
-          <label htmlFor="nome" className="block text-sm font-semibold text-gray-900 mb-2">
+          <label
+            htmlFor="nome"
+            className="block text-sm font-semibold text-gray-900 mb-2"
+          >
             O teu nome
           </label>
           <input

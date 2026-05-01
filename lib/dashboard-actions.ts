@@ -2,7 +2,11 @@
 
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { mapDiaSemana, getInicioDaSemana, getFimDaSemana } from "@/lib/date-utils";
+import {
+  mapDiaSemana,
+  getInicioDaSemana,
+  getFimDaSemana,
+} from "@/lib/date-utils";
 
 export async function getDashboardDataAction() {
   try {
@@ -94,7 +98,10 @@ export async function getDashboardDataAction() {
 
     let mediaGeral = 0;
     if (todasAvaliacoes.length > 0) {
-      const somaNotas = todasAvaliacoes.reduce((sum, a) => sum + (a.nota || 0), 0);
+      const somaNotas = todasAvaliacoes.reduce(
+        (sum, a) => sum + (a.nota || 0),
+        0,
+      );
       mediaGeral = somaNotas / todasAvaliacoes.length;
     }
 

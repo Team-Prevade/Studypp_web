@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getDashboardDataAction } from "@/lib/dashboard-actions";
+import { ProfileButton } from "@/components/profile-button";
 import {
   formatarDataPT,
   formatarHora,
@@ -8,7 +9,14 @@ import {
   formatarTempoRelativo,
   pluralizar,
 } from "@/lib/date-utils";
-import { CheckCircle2, Calendar, Clock, TrendingUp, AlertCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Calendar,
+  Clock,
+  TrendingUp,
+  AlertCircle,
+  Bell,
+} from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -33,12 +41,21 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Bom dia, {data.user.nome}!
-          </h1>
-          <p className="text-gray-600">{formatarDataPT(hoje)}</p>
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+        <div className="px-8 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">
+              Bom dia, {data.user.nome}!
+            </h1>
+            <p className="text-gray-600">{formatarDataPT(hoje)}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+              <Bell className="w-6 h-6 text-gray-600" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <ProfileButton nome={data.user.nome} email={data.user.email} />
+          </div>
         </div>
       </div>
 
@@ -167,7 +184,10 @@ export default async function DashboardPage() {
             {data.tarefasPendentes.length > 0 ? (
               <div className="space-y-3">
                 {data.tarefasPendentes.map((tarefa) => (
-                  <div key={tarefa.id} className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div
+                    key={tarefa.id}
+                    className="p-3 rounded-lg bg-gray-50 border border-gray-200"
+                  >
                     <div className="flex items-start gap-2 mb-2">
                       {tarefa.status === "ATRASADA" ? (
                         <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />

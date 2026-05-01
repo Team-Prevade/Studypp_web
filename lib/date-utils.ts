@@ -1,6 +1,14 @@
 // Mapeamento de dia da semana (0-6 do JavaScript para DiaSemana do Prisma)
 export function mapDiaSemana(dayOfWeek: number): string {
-  const dias = ["DOMINGO", "SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA", "SABADO"];
+  const dias = [
+    "DOMINGO",
+    "SEGUNDA",
+    "TERCA",
+    "QUARTA",
+    "QUINTA",
+    "SEXTA",
+    "SABADO",
+  ];
   return dias[dayOfWeek];
 }
 
@@ -80,7 +88,11 @@ export function getFimDaSemana(date: Date = new Date()): Date {
 }
 
 // Pluralizar (ex: "1 tarefa", "2 tarefas")
-export function pluralizar(count: number, singular: string, plural?: string): string {
+export function pluralizar(
+  count: number,
+  singular: string,
+  plural?: string,
+): string {
   if (count === 1) return `${count} ${singular}`;
   return `${count} ${plural || singular + "s"}`;
 }

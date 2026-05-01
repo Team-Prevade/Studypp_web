@@ -140,6 +140,7 @@ export async function saveTimetableAction(aulas: AulaData[]) {
       aulas.map((aula) =>
         prisma.aula.create({
           data: {
+            utilizadorId: user.id,
             disciplinaId: aula.disciplinaId,
             diaSemana: aula.diaSemana,
             horaInicio: aula.horaInicio,

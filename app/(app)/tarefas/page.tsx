@@ -30,7 +30,9 @@ export default async function TarefasPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">Tarefas</h1>
-        <p className="text-gray-600 mt-2">Gerencie todas as suas tarefas acadêmicas</p>
+        <p className="text-gray-600 mt-2">
+          Gerencie todas as suas tarefas acadêmicas
+        </p>
       </div>
 
       <TaskList

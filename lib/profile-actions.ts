@@ -42,10 +42,7 @@ export async function getProfileAction() {
   }
 }
 
-export async function updateProfileAction(
-  nome: string,
-  email: string
-) {
+export async function updateProfileAction(nome: string, email: string) {
   try {
     const session = await auth();
     if (!session?.user?.email) {
@@ -72,7 +69,7 @@ export async function updateProfileAction(
 export async function changePasswordAction(
   currentPassword: string,
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) {
   try {
     const session = await auth();
@@ -85,7 +82,10 @@ export async function changePasswordAction(
     }
 
     if (newPassword.length < 6) {
-      return { success: false, error: "A senha deve ter pelo menos 6 caracteres" };
+      return {
+        success: false,
+        error: "A senha deve ter pelo menos 6 caracteres",
+      };
     }
 
     // In a real app, you would verify the current password

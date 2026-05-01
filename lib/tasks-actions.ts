@@ -33,10 +33,7 @@ export async function getTasksAction(status?: string) {
       include: {
         disciplina: true,
       },
-      orderBy: [
-        { prazo: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ prazo: "asc" }, { createdAt: "desc" }],
     });
 
     // Group by priority

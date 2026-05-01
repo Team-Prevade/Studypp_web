@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { Edit2, Trash2, BookOpen, Calendar, FileText } from "lucide-react";
-import { updateDisciplineAction, deleteDisciplineAction } from "@/lib/disciplines-actions";
+import {
+  updateDisciplineAction,
+  deleteDisciplineAction,
+} from "@/lib/disciplines-actions";
 
 interface DisciplineStats {
   aulas: number;
@@ -45,7 +48,7 @@ export function DisciplinesList({ disciplinas }: DisciplinesListProps) {
   const handleDelete = async (disciplinaId: string) => {
     if (
       confirm(
-        "Tem a certeza que deseja eliminar esta disciplina? Todas as notas e tarefas relacionadas serão também eliminadas."
+        "Tem a certeza que deseja eliminar esta disciplina? Todas as notas e tarefas relacionadas serão também eliminadas.",
       )
     ) {
       setLoading(true);
@@ -71,8 +74,8 @@ export function DisciplinesList({ disciplinas }: DisciplinesListProps) {
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 text-lg">
-            Você ainda não adicionou disciplinas. Comece pelo onboarding ou
-            crie uma nova disciplina.
+            Você ainda não adicionou disciplinas. Comece pelo onboarding ou crie
+            uma nova disciplina.
           </p>
         </div>
       ) : (

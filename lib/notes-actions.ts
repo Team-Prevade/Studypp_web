@@ -66,7 +66,7 @@ export async function getNotesAction() {
 export async function createNoteAction(
   disciplinaId: string,
   titulo: string,
-  conteudo: string
+  conteudo: string,
 ) {
   try {
     const session = await auth();
@@ -102,7 +102,7 @@ export async function createNoteAction(
 export async function updateNoteAction(
   notaId: string,
   titulo: string,
-  conteudo: string
+  conteudo: string,
 ) {
   try {
     const session = await auth();

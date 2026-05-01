@@ -54,10 +54,12 @@ export function TaskList({ tarefas, pendentes, completas }: TaskListProps) {
     return true;
   });
 
-  const handleToggleStatus = async (tarefaId: string, currentStatus: string) => {
+  const handleToggleStatus = async (
+    tarefaId: string,
+    currentStatus: string,
+  ) => {
     setLoading(true);
-    const newStatus =
-      currentStatus === "PENDENTE" ? "CONCLUIDA" : "PENDENTE";
+    const newStatus = currentStatus === "PENDENTE" ? "CONCLUIDA" : "PENDENTE";
     await updateTaskStatusAction(tarefaId, newStatus);
     setLoading(false);
     // Reload the page to get updated data
@@ -88,7 +90,7 @@ export function TaskList({ tarefas, pendentes, completas }: TaskListProps) {
     }
 
     const daysUntil = Math.ceil(
-      (date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      (date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
     );
     if (daysUntil < 0) {
       return `Atrasado ${Math.abs(daysUntil)} dias`;
@@ -165,9 +167,7 @@ export function TaskList({ tarefas, pendentes, completas }: TaskListProps) {
               <div className="flex items-start gap-4">
                 {/* Checkbox */}
                 <button
-                  onClick={() =>
-                    handleToggleStatus(tarefa.id, tarefa.status)
-                  }
+                  onClick={() => handleToggleStatus(tarefa.id, tarefa.status)}
                   className={`mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
                     tarefa.status === "CONCLUIDA"
                       ? "bg-green-600 border-green-600"

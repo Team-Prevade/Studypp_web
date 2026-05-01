@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { User, Mail, Lock, BookOpen, CheckCircle, Clock } from "lucide-react";
-import { updateProfileAction, changePasswordAction } from "@/lib/profile-actions";
+import {
+  updateProfileAction,
+  changePasswordAction,
+} from "@/lib/profile-actions";
 
 interface UserData {
   id: string;
@@ -62,7 +65,7 @@ export function ProfileView({ user }: ProfileViewProps) {
     const result = await changePasswordAction(
       passwordData.currentPassword,
       passwordData.newPassword,
-      passwordData.confirmPassword
+      passwordData.confirmPassword,
     );
     if (result.success) {
       setMessage("Senha alterada com sucesso!");
@@ -158,7 +161,9 @@ export function ProfileView({ user }: ProfileViewProps) {
       {/* Edit Profile */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Informações Pessoais</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Informações Pessoais
+          </h2>
           {!editMode && !passwordMode && (
             <button
               onClick={() => setEditMode(true)}

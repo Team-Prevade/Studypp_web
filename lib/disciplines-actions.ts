@@ -50,7 +50,7 @@ export async function getDisciplinesAction() {
 export async function updateDisciplineAction(
   disciplinaId: string,
   nome: string,
-  cor: string
+  cor: string,
 ) {
   try {
     const session = await auth();

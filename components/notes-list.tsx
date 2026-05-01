@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Trash2, Plus, Edit2, X } from "lucide-react";
-import { deleteNoteAction, createNoteAction, updateNoteAction } from "@/lib/notes-actions";
+import {
+  deleteNoteAction,
+  createNoteAction,
+  updateNoteAction,
+} from "@/lib/notes-actions";
 
 interface Disciplina {
   id: string;
@@ -30,7 +34,7 @@ export function NotesList({
   notasPorDisciplina,
 }: NotesListProps) {
   const [selectedDisciplina, setSelectedDisciplina] = useState<string | null>(
-    disciplinas.length > 0 ? disciplinas[0].id : null
+    disciplinas.length > 0 ? disciplinas[0].id : null,
   );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showNewNote, setShowNewNote] = useState(false);
@@ -46,7 +50,11 @@ export function NotesList({
     if (!selectedDisciplina) return;
 
     setLoading(true);
-    await createNoteAction(selectedDisciplina, formData.titulo, formData.conteudo);
+    await createNoteAction(
+      selectedDisciplina,
+      formData.titulo,
+      formData.conteudo,
+    );
     setFormData({ titulo: "", conteudo: "" });
     setShowNewNote(false);
     setLoading(false);
@@ -114,7 +122,9 @@ export function NotesList({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900">{d.nome}</span>
+                      <span className="font-medium text-gray-900">
+                        {d.nome}
+                      </span>
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                         {count}
                       </span>

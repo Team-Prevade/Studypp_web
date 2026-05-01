@@ -14,7 +14,7 @@ export default async function CalendarioPage() {
     const hoje = new Date();
     const result = await getCalendarEventsAction(
       hoje.getFullYear(),
-      hoje.getMonth()
+      hoje.getMonth(),
     );
 
     const eventos = result.data?.eventos || [];

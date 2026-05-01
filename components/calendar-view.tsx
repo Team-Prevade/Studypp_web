@@ -81,11 +81,7 @@ export function CalendarView({
         week.push({
           day: prevMonthCounter,
           isCurrentMonth: false,
-          date: new Date(
-            currentYear,
-            currentMonth - 1,
-            prevMonthCounter
-          ),
+          date: new Date(currentYear, currentMonth - 1, prevMonthCounter),
         });
         prevMonthCounter++;
       } else if (dayCounter <= daysInMonth) {
@@ -104,7 +100,7 @@ export function CalendarView({
           date: new Date(
             currentYear,
             currentMonth + 1,
-            dayCounter - daysInMonth
+            dayCounter - daysInMonth,
           ),
         });
         dayCounter++;

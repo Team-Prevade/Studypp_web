@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Edit2, X } from "lucide-react";
-import {
-  formatarHora,
-  getNomeDia,
-  getInicioDaSemana,
-} from "@/lib/date-utils";
+import { formatarHora, getNomeDia, getInicioDaSemana } from "@/lib/date-utils";
 
 interface Disciplina {
   id: string;
@@ -35,7 +31,7 @@ export function TimetableView({
   horas,
 }: TimetableProps) {
   const [currentDate, setCurrentDate] = useState<Date>(
-    new Date(initialStartDate)
+    new Date(initialStartDate),
   );
   const [isEditMode, setIsEditMode] = useState(false);
   const [aulas, setAulas] = useState<Aula[]>(initialAulas);
@@ -70,7 +66,7 @@ export function TimetableView({
     return aulas.filter(
       (a) =>
         a.diaSemana === dia &&
-        !((a.horaFim <= horaInicio || a.horaInicio >= horaFim))
+        !(a.horaFim <= horaInicio || a.horaInicio >= horaFim),
     );
   };
 
@@ -80,7 +76,9 @@ export function TimetableView({
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Horário Semanal</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Horário Semanal
+            </h1>
             <p className="text-gray-600 text-sm">
               Seu cronograma organizado para a semana
             </p>
@@ -137,7 +135,10 @@ export function TimetableView({
                 Hora
               </th>
               {diasNomes.map((dia, i) => (
-                <th key={dia} className="px-4 py-3 text-center border-l border-gray-200">
+                <th
+                  key={dia}
+                  className="px-4 py-3 text-center border-l border-gray-200"
+                >
                   <div className="text-xs font-semibold text-gray-600 uppercase">
                     {dia}
                   </div>
@@ -171,9 +172,14 @@ export function TimetableView({
                         .filter((a) => a.horaInicio === hora)
                         .map((aula) => {
                           // Calculate height based on duration
-                          const [startH, startM] = aula.horaInicio.split(":").map(Number);
-                          const [endH, endM] = aula.horaFim.split(":").map(Number);
-                          const duracao = (endH - startH) * 60 + (endM - startM);
+                          const [startH, startM] = aula.horaInicio
+                            .split(":")
+                            .map(Number);
+                          const [endH, endM] = aula.horaFim
+                            .split(":")
+                            .map(Number);
+                          const duracao =
+                            (endH - startH) * 60 + (endM - startM);
                           const altura = Math.max(20, (duracao / 60) * 80);
 
                           return (
@@ -197,7 +203,9 @@ export function TimetableView({
                                 <button
                                   onClick={() => {
                                     // Remove aula
-                                    setAulas(aulas.filter((a) => a.id !== aula.id));
+                                    setAulas(
+                                      aulas.filter((a) => a.id !== aula.id),
+                                    );
                                   }}
                                   className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-red-500 hover:bg-red-600 rounded p-1 transition-opacity"
                                 >
@@ -219,7 +227,9 @@ export function TimetableView({
       {/* Empty State */}
       {aulas.length === 0 && (
         <div className="p-12 text-center">
-          <p className="text-gray-500">Nenhuma aula agendada para esta semana</p>
+          <p className="text-gray-500">
+            Nenhuma aula agendada para esta semana
+          </p>
         </div>
       )}
     </div>

@@ -1,18 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Lock, BookOpen, CheckCircle, Clock } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
 import {
+  AlertTriangle,
+  BookOpen,
+  CalendarDays,
+  Check,
+  GraduationCap,
+  Save,
+  ShieldCheck,
+  Trash2,
+  Upload,
+  User,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  deleteAccountAction,
   updateProfileAction,
-  changePasswordAction,
 } from "@/lib/profile-actions";
 
 interface UserData {
   id: string;
   nome: string;
   email: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
+  anoEscolar?: string | null;
+  curso?: string | null;
+  bio?: string | null;
   onboardingFeito: boolean;
+  createdAt?: Date | string;
   _count?: {
     aulas: number;
     tarefas: number;
@@ -25,323 +41,291 @@ interface ProfileViewProps {
   user: UserData;
 }
 
+type FormState = {
+  nome: string;
+  anoEscolar: string;
+  curso: string;
+  bio: string;
+};
+
+const schoolYears = [
+  "7º Ano",
+  "8º Ano",
+  "9º Ano",
+  "10º Ano",
+  "11º Ano",
+  "12º Ano",
+  "1º Ano Universitário",
+  "2º Ano Universitário",
+  "3º Ano Universitário",
+  "Outro",
+];
+
+function formatMemberSince(value?: Date | string) {
+  if (!value) return "Conta recente";
+  return new Intl.DateTimeFormat("pt-PT", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export function ProfileView({ user }: ProfileViewProps) {
-  const [editMode, setEditMode] = useState(false);
-  const [passwordMode, setPasswordMode] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState<FormState>({
     nome: user.nome,
-    email: user.email,
+    anoEscolar: user.anoEscolar ?? "",
+    curso: user.curso ?? "",
+    bio: user.bio ?? "",
   });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [deleteText, setDeleteText] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+  const bioCount = form.bio.length;
+  const counts = useMemo(
+    () => ({
+      disciplinas: user._count?.disciplinas ?? 0,
+      aulas: user._count?.aulas ?? 0,
+      tarefas: user._count?.tarefas ?? 0,
+      notas: user._count?.notas ?? 0,
+    }),
+    [user._count],
+  );
 
-    const result = await updateProfileAction(formData.nome, formData.email);
-    if (result.success) {
-      setMessage("Perfil atualizado com sucesso!");
-      setEditMode(false);
-      // Reload to get updated data
-      setTimeout(() => window.location.reload(), 1000);
-    } else {
-      setMessage(result.error || "Erro ao atualizar perfil");
-    }
-    setLoading(false);
+  const showFeedback = (message: string) => {
+    toast.success(message);
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-
-    const result = await changePasswordAction(
-      passwordData.currentPassword,
-      passwordData.newPassword,
-      passwordData.confirmPassword,
-    );
-    if (result.success) {
-      setMessage("Senha alterada com sucesso!");
-      setPasswordMode(false);
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-    } else {
-      setMessage(result.error || "Erro ao alterar senha");
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.nome.trim()) {
+      setError("O nome é obrigatório.");
+      return;
     }
-    setLoading(false);
+
+    startTransition(async () => {
+      const result = await updateProfileAction(
+        form.nome,
+        user.email,
+        form.anoEscolar,
+        form.curso,
+        form.bio,
+      );
+
+      if (!result.success) {
+        setError(result.error || "Não foi possível atualizar o perfil.");
+        return;
+      }
+
+      setError(null);
+      showFeedback("Perfil atualizado.");
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    if (deleteText !== user.email) return;
+
+    startTransition(async () => {
+      const result = await deleteAccountAction();
+      if (!result.success) {
+        setError(result.error || "Não foi possível eliminar a conta.");
+        return;
+      }
+
+      window.location.href = "/login";
+    });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <div className="h-32 bg-linear-to-r from-blue-900 via-blue-800 to-indigo-800"></div>
-        <div className="px-6 pb-6 -mt-16 relative">
-          <div className="flex items-end gap-4">
-            <div className="w-32 h-32 rounded-full bg-linear-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-lg border-4 border-white">
-              <User className="w-16 h-16" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">{user.nome}</h1>
-              <p className="text-gray-600">{user.email}</p>
-              {user.onboardingFeito && (
-                <div className="flex items-center gap-2 mt-2 text-green-600">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">Onboarding concluído</span>
-                </div>
+    <div className="min-h-screen bg-slate-50 px-6 py-8">
+      <header className="mb-8">
+        <p className="text-sm font-semibold text-blue-700">Perfil</p>
+        <h1 className="mt-2 text-3xl font-bold text-gray-900">A tua conta Study++</h1>
+      </header>
+
+      {error ? (
+        <div className="mb-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="space-y-5">
+          <section className="rounded-xl bg-white p-6 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-blue-100 text-3xl font-bold text-blue-700 ring-4 ring-blue-50">
+              {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.avatarUrl} alt={user.nome} className="h-full w-full object-cover" />
+              ) : (
+                initials(form.nome || user.nome)
               )}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="w-5 h-5 text-blue-600" />
-            <span className="text-gray-600 text-sm">Disciplinas</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">
-            {user._count?.disciplinas || 0}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-purple-600" />
-            <span className="text-gray-600 text-sm">Aulas</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">
-            {user._count?.aulas || 0}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-gray-600 text-sm">Tarefas</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">
-            {user._count?.tarefas || 0}
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Mail className="w-5 h-5 text-orange-600" />
-            <span className="text-gray-600 text-sm">Notas</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">
-            {user._count?.notas || 0}
-          </p>
-        </div>
-      </div>
-
-      {/* Message */}
-      {message && (
-        <div
-          className={`p-4 rounded-lg ${
-            message.includes("sucesso")
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message}
-        </div>
-      )}
-
-      {/* Edit Profile */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Informações Pessoais
-          </h2>
-          {!editMode && !passwordMode && (
-            <button
-              onClick={() => setEditMode(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              Editar
+            <button type="button" className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-blue-700">
+              <Upload className="h-3.5 w-3.5" />
+              Carregar foto
             </button>
-          )}
-        </div>
+            <h2 className="text-xl font-bold text-gray-900">{form.nome || user.nome}</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              {form.anoEscolar || "Ano não definido"} · {form.curso || "Curso não definido"}
+            </p>
 
-        {editMode ? (
-          <form onSubmit={handleUpdateProfile} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Nome
-              </label>
-              <input
-                type="text"
-                value={formData.nome}
-                onChange={(e) =>
-                  setFormData({ ...formData, nome: e.target.value })
+            <div className="mt-6 space-y-3 text-left text-sm">
+              <InfoRow label="Membro desde" value={formatMemberSince(user.createdAt)} />
+              <InfoRow
+                label="Estado"
+                value={
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
+                    <ShieldCheck className="h-3 w-3" />
+                    {user.onboardingFeito ? "Activa" : "Configuração pendente"}
+                  </span>
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={loading}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={loading}
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Salvando..." : "Salvar Alterações"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditMode(false);
-                  setFormData({ nome: user.nome, email: user.email });
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg transition-colors"
-                disabled={loading}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Nome
-              </label>
-              <p className="text-lg text-gray-900">{user.nome}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Email
-              </label>
-              <p className="text-lg text-gray-900">{user.email}</p>
-            </div>
-          </div>
-        )}
-      </div>
+          </section>
 
-      {/* Change Password */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Segurança</h2>
-          {!editMode && !passwordMode && (
+          <section className="grid grid-cols-2 gap-3">
+            <StatCard icon={<BookOpen className="h-4 w-4" />} label="Disciplinas" value={counts.disciplinas} />
+            <StatCard icon={<CalendarDays className="h-4 w-4" />} label="Aulas" value={counts.aulas} />
+            <StatCard icon={<Check className="h-4 w-4" />} label="Tarefas" value={counts.tarefas} />
+            <StatCard icon={<GraduationCap className="h-4 w-4" />} label="Notas" value={counts.notas} />
+          </section>
+        </aside>
+
+        <main className="space-y-6">
+          <section className="rounded-xl bg-white p-6 shadow-sm">
+            <h2 className="mb-5 font-bold text-gray-900">Informações pessoais</h2>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <TextField label="Nome" value={form.nome} onChange={(nome) => setForm((current) => ({ ...current, nome }))} />
+                <TextField label="Email" value={user.email} readOnly onChange={() => undefined} />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Ano escolar</label>
+                  <select
+                    value={form.anoEscolar}
+                    onChange={(event) => setForm((current) => ({ ...current, anoEscolar: event.target.value }))}
+                    className="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="">Selecionar ano</option>
+                    {schoolYears.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <TextField label="Curso" value={form.curso} onChange={(curso) => setForm((current) => ({ ...current, curso }))} />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Bio</label>
+                <textarea
+                  value={form.bio}
+                  onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value.slice(0, 300) }))}
+                  placeholder="Fala um pouco sobre os teus objetivos, rotina ou área de estudo..."
+                  className="h-28 w-full resize-none rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-600"
+                />
+                <p className="mt-1 text-right text-xs text-gray-400">{bioCount}/300 caracteres</p>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
+                  {isPending ? "A guardar..." : "Guardar alterações"}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section className="rounded-xl border border-red-100 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="rounded-lg bg-red-50 p-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="font-bold text-red-700">Zona de perigo</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Ao eliminar a tua conta, todos os dados, horários e notas serão permanentemente removidos.
+                </p>
+              </div>
+            </div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Escreve o teu email para confirmar
+            </label>
+            <input
+              value={deleteText}
+              onChange={(event) => setDeleteText(event.target.value)}
+              placeholder={user.email}
+              className="mb-4 w-full max-w-md rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-red-500"
+            />
             <button
-              onClick={() => setPasswordMode(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              type="button"
+              onClick={handleDeleteAccount}
+              disabled={deleteText !== user.email || isPending}
+              className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Lock className="w-4 h-4" />
-              Alterar Senha
+              <Trash2 className="h-4 w-4" />
+              Eliminar conta
             </button>
-          )}
-        </div>
-
-        {passwordMode ? (
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Senha Atual
-              </label>
-              <input
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) =>
-                  setPasswordData({
-                    ...passwordData,
-                    currentPassword: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Nova Senha
-              </label>
-              <input
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) =>
-                  setPasswordData({
-                    ...passwordData,
-                    newPassword: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                Confirmar Nova Senha
-              </label>
-              <input
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) =>
-                  setPasswordData({
-                    ...passwordData,
-                    confirmPassword: e.target.value,
-                  })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={loading}
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Salvando..." : "Alterar Senha"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPasswordMode(false);
-                  setPasswordData({
-                    currentPassword: "",
-                    newPassword: "",
-                    confirmPassword: "",
-                  });
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg transition-colors"
-                disabled={loading}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <p className="text-gray-600">
-            Clique em "Alterar Senha" para atualizar sua senha
-          </p>
-        )}
+          </section>
+        </main>
       </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-gray-500">{label}</span>
+      <span className="font-medium text-gray-800">{value}</span>
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  return (
+    <div className="rounded-xl bg-white p-4 shadow-sm">
+      <div className="mb-2 flex items-center gap-2 text-blue-700">
+        {icon}
+        <span className="text-xs font-semibold text-gray-500">{label}</span>
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  readOnly,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  readOnly?: boolean;
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
+      <input
+        value={value}
+        readOnly={readOnly}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-600 read-only:text-gray-500"
+      />
     </div>
   );
 }

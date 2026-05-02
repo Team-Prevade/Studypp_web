@@ -77,20 +77,19 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-6 py-12 sm:px-8 lg:px-12">
         <div className="w-full max-w-md">
           {/* Tabs */}
-          <div className="flex gap-8 mb-10 border-b border-gray-200">
+          <div className="mb-10 flex gap-8 border-b border-gray-200">
             <button
-              disabled
-              className="pb-3 text-lg font-medium text-blue-600 border-b-2 border-blue-600"
+              type="button"
+              aria-current="page"
+              className="border-b-2 border-blue-600 pb-3 text-lg font-medium text-blue-600"
             >
               Entrar
             </button>
-            <Link href="/register">
-              <button
-                type="button"
-                className="pb-3 text-lg font-medium transition-colors text-gray-500 hover:text-gray-700"
-              >
-                Criar conta
-              </button>
+            <Link
+              href="/register"
+              className="pb-3 text-lg font-medium text-gray-500 transition-colors hover:text-gray-700"
+            >
+              Criar conta
             </Link>
           </div>
 

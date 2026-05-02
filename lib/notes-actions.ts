@@ -3,47 +3,46 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
+async function getCurrentUser() {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return { user: null, error: "Não autenticado" };
+  }
+
+  const user = await prisma.utilizador.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!user) {
+    return { user: null, error: "Utilizador não encontrado" };
+  }
+
+  return { user, error: null };
+}
+
+// Backward-compatible aliases for the old "notes" API.
+// The current app model stores textual study notes as Apontamento.
 export async function getNotesAction() {
   try {
-    const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Não autenticado", data: null };
-    }
+    const { user, error } = await getCurrentUser();
+    if (!user) return { success: false, error, data: null };
 
-    const user = await prisma.utilizador.findUnique({
-      where: { email: session.user.email },
-    });
+    const [notas, disciplinas] = await Promise.all([
+      prisma.apontamento.findMany({
+        where: { utilizadorId: user.id },
+        include: { disciplina: true },
+        orderBy: { updatedAt: "desc" },
+      }),
+      prisma.disciplina.findMany({
+        where: { utilizadorId: user.id },
+        orderBy: { ordem: "asc" },
+      }),
+    ]);
 
-    if (!user) {
-      return { success: false, error: "Utilizador não encontrado", data: null };
-    }
-
-    // Fetch notes
-    const notas = await prisma.nota.findMany({
-      where: {
-        utilizadorId: user.id,
-      },
-      include: {
-        disciplina: true,
-      },
-      orderBy: { updatedAt: "desc" },
-    });
-
-    // Fetch disciplines
-    const disciplinas = await prisma.disciplina.findMany({
-      where: {
-        utilizadorId: user.id,
-      },
-      orderBy: { ordem: "asc" },
-    });
-
-    // Group notes by discipline
-    const notasPorDisciplina: {
-      [key: string]: any[];
-    } = {};
-    disciplinas.forEach((d) => {
-      notasPorDisciplina[d.id] = notas.filter((n) => n.disciplinaId === d.id);
-    });
+    const notasPorDisciplina = disciplinas.reduce<Record<string, typeof notas>>((acc, disciplina) => {
+      acc[disciplina.id] = notas.filter((nota) => nota.disciplinaId === disciplina.id);
+      return acc;
+    }, {});
 
     return {
       success: true,
@@ -55,11 +54,7 @@ export async function getNotesAction() {
     };
   } catch (error) {
     console.error("Error fetching notes:", error);
-    return {
-      success: false,
-      error: "Erro ao carregar notas",
-      data: null,
-    };
+    return { success: false, error: "Erro ao carregar notas", data: null };
   }
 }
 
@@ -69,27 +64,26 @@ export async function createNoteAction(
   conteudo: string,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Não autenticado" };
-    }
+    const { user, error } = await getCurrentUser();
+    if (!user) return { success: false, error };
 
-    const user = await prisma.utilizador.findUnique({
-      where: { email: session.user.email },
+    const disciplina = await prisma.disciplina.findFirst({
+      where: { id: disciplinaId, utilizadorId: user.id },
+      select: { id: true },
     });
 
-    if (!user) {
-      return { success: false, error: "Utilizador não encontrado" };
+    if (!disciplina) {
+      return { success: false, error: "Disciplina não encontrada" };
     }
 
-    // Create note
-    const nota = await prisma.nota.create({
+    const nota = await prisma.apontamento.create({
       data: {
-        titulo,
+        titulo: titulo.trim() || "Sem título",
         conteudo,
         disciplinaId,
         utilizadorId: user.id,
       },
+      include: { disciplina: true },
     });
 
     return { success: true, data: nota };
@@ -105,35 +99,23 @@ export async function updateNoteAction(
   conteudo: string,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Não autenticado" };
-    }
+    const { user, error } = await getCurrentUser();
+    if (!user) return { success: false, error };
 
-    const user = await prisma.utilizador.findUnique({
-      where: { email: session.user.email },
+    const nota = await prisma.apontamento.findFirst({
+      where: { id: notaId, utilizadorId: user.id },
+      select: { id: true },
     });
 
-    if (!user) {
-      return { success: false, error: "Utilizador não encontrado" };
-    }
-
-    // Verify ownership
-    const nota = await prisma.nota.findUnique({
-      where: { id: notaId },
-    });
-
-    if (!nota || nota.utilizadorId !== user.id) {
+    if (!nota) {
       return { success: false, error: "Nota não encontrada" };
     }
 
-    // Update note
-    await prisma.nota.update({
+    await prisma.apontamento.update({
       where: { id: notaId },
       data: {
-        titulo,
+        titulo: titulo.trim() || "Sem título",
         conteudo,
-        updatedAt: new Date(),
       },
     });
 
@@ -146,30 +128,19 @@ export async function updateNoteAction(
 
 export async function deleteNoteAction(notaId: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Não autenticado" };
-    }
+    const { user, error } = await getCurrentUser();
+    if (!user) return { success: false, error };
 
-    const user = await prisma.utilizador.findUnique({
-      where: { email: session.user.email },
+    const nota = await prisma.apontamento.findFirst({
+      where: { id: notaId, utilizadorId: user.id },
+      select: { id: true },
     });
 
-    if (!user) {
-      return { success: false, error: "Utilizador não encontrado" };
-    }
-
-    // Verify ownership
-    const nota = await prisma.nota.findUnique({
-      where: { id: notaId },
-    });
-
-    if (!nota || nota.utilizadorId !== user.id) {
+    if (!nota) {
       return { success: false, error: "Nota não encontrada" };
     }
 
-    // Delete note
-    await prisma.nota.delete({
+    await prisma.apontamento.delete({
       where: { id: notaId },
     });
 

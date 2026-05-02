@@ -3,6 +3,17 @@ import { redirect } from "next/navigation";
 import { getTemporizadorAction } from "@/lib/temporizador-actions";
 import { TemporizadorView } from "@/components/temporizador-view";
 
+function serializeData(data: any) {
+  return {
+    ...data,
+    sessoesHoje: (data.sessoesHoje ?? []).map((sessao: any) => ({
+      ...sessao,
+      iniciadaEm: new Date(sessao.iniciadaEm).toISOString(),
+      terminadaEm: sessao.terminadaEm ? new Date(sessao.terminadaEm).toISOString() : null,
+    })),
+  };
+}
+
 export default async function TemporizadorPage() {
   const session = await auth();
 
@@ -24,5 +35,5 @@ export default async function TemporizadorPage() {
     );
   }
 
-  return <TemporizadorView data={result.data} />;
+  return <TemporizadorView data={serializeData(result.data)} />;
 }

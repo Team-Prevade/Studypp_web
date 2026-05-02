@@ -67,14 +67,16 @@ export default function DisciplinasStep() {
       }
 
       // Add to local state
-      setDisciplinas([
-        ...disciplinas,
-        {
-          id: result.data.id,
-          nome: result.data.nome,
-          cor: result.data.cor,
-        },
-      ]);
+      if (result.data) {
+        setDisciplinas([
+          ...disciplinas,
+          {
+            id: result.data.id,
+            nome: result.data.nome,
+            cor: result.data.cor,
+          },
+        ]);
+      }
 
       setNomeDisciplina("");
       setCorSelecionada(PRESET_COLORS[0].hex);

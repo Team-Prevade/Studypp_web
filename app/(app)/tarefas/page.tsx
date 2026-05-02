@@ -13,33 +13,28 @@ export default async function TarefasPage() {
   const result = await getTasksAction();
 
   const tarefas = result.data?.tarefas || [];
+  const disciplinas = result.data?.disciplinas || [];
   const pendentes = result.data?.pendentes || 0;
   const completas = result.data?.completas || 0;
 
-  // Convert dates to proper format
-  const tarefasFormatadas = tarefas.map((t: any) => ({
+  const tarefasFormatadas = tarefas.map((t) => ({
     id: t.id,
-    descricao: t.descricao,
-    prazo: typeof t.prazo === "string" ? new Date(t.prazo) : t.prazo,
+    titulo: t.titulo,
+    descricao: t.descricao ?? null,
+    prazo: t.prazo ? new Date(t.prazo).toISOString() : null,
     status: t.status,
-    prioridade: t.prioridade || "BAIXA",
+    prioridade: t.prioridade,
+    progresso: t.progresso ?? 0,
     disciplina: t.disciplina || null,
+    createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : undefined,
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Tarefas</h1>
-        <p className="text-gray-600 mt-2">
-          Gerencie todas as suas tarefas acadêmicas
-        </p>
-      </div>
-
-      <TaskList
-        tarefas={tarefasFormatadas}
-        pendentes={pendentes}
-        completas={completas}
-      />
-    </div>
+    <TaskList
+      tarefas={tarefasFormatadas}
+      disciplinas={disciplinas}
+      pendentes={pendentes}
+      completas={completas}
+    />
   );
 }

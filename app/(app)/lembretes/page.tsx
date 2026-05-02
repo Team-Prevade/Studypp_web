@@ -3,6 +3,17 @@ import { redirect } from "next/navigation";
 import { getLembretesAction } from "@/lib/lembretes-actions";
 import { LembretesView } from "@/components/lembretes-view";
 
+function serializeLembrete(lembrete: any) {
+  return {
+    ...lembrete,
+    dataHora: new Date(lembrete.dataHora).toISOString(),
+    concluidoEm: lembrete.concluidoEm ? new Date(lembrete.concluidoEm).toISOString() : null,
+    createdAt: lembrete.createdAt ? new Date(lembrete.createdAt).toISOString() : undefined,
+    updatedAt: lembrete.updatedAt ? new Date(lembrete.updatedAt).toISOString() : undefined,
+    disciplina: lembrete.disciplina ?? null,
+  };
+}
+
 export default async function LembretesPage() {
   const session = await auth();
 
@@ -22,7 +33,7 @@ export default async function LembretesPage() {
     );
   }
 
-  const lembretes = result.data?.lembretes || [];
+  const lembretes = (result.data?.lembretes || []).map(serializeLembrete);
   const disciplinas = result.data?.disciplinas || [];
   const grupos = result.data?.grupos || {
     atrasados: [],
@@ -30,12 +41,18 @@ export default async function LembretesPage() {
     amanha: [],
     futuros: [],
   };
+  const serializedGroups = {
+    atrasados: (grupos.atrasados || []).map(serializeLembrete),
+    hoje: (grupos.hoje || []).map(serializeLembrete),
+    amanha: (grupos.amanha || []).map(serializeLembrete),
+    futuros: (grupos.futuros || []).map(serializeLembrete),
+  };
 
   return (
     <LembretesView
       lembretes={lembretes}
       disciplinas={disciplinas}
-      grupos={grupos}
+      grupos={serializedGroups}
     />
   );
 }

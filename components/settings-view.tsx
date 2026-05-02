@@ -1,366 +1,367 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Bell,
-  Palette,
   CalendarDays,
-  Settings2,
   ChevronRight,
-  Check,
+  Mail,
+  Palette,
+  Save,
+  Settings2,
 } from "lucide-react";
+import { updateSettingsAction, type SettingsData } from "@/lib/settings-actions";
 
-const storageKey = "studypp:settings";
-
-type ThemeMode = "claro" | "escuro" | "sistema";
-
-type WeekStart = "SEGUNDA" | "DOMINGO";
-
-interface SettingsState {
-  themeMode: ThemeMode;
-  accentColor: string;
-  weekStart: WeekStart;
-  taskDuration: number;
-  showWeekend: boolean;
-  academicStart: string;
-  academicEnd: string;
+interface SettingsViewProps {
+  initialSettings: SettingsData;
 }
 
-const defaultSettings: SettingsState = {
-  themeMode: "claro",
-  accentColor: "#0f766e",
-  weekStart: "SEGUNDA",
-  taskDuration: 45,
-  showWeekend: true,
-  academicStart: "2023-09-15",
-  academicEnd: "2024-06-30",
-};
+const accentOptions = ["#2563EB", "#1E40AF", "#0D9488", "#7C3AED", "#059669"];
 
-const accentOptions = ["#0f766e", "#7c3aed", "#2563eb", "#059669"];
+const themeOptions = [
+  { value: "light", label: "Claro" },
+  { value: "dark", label: "Escuro" },
+  { value: "system", label: "Sistema" },
+];
 
-export function SettingsView() {
-  const [settings, setSettings] = useState<SettingsState>(defaultSettings);
-  const [saved, setSaved] = useState(false);
+const taskLeadOptions = [
+  { value: 0, label: "Na hora" },
+  { value: 60, label: "1 hora antes" },
+  { value: 1440, label: "1 dia antes" },
+  { value: 2880, label: "2 dias antes" },
+  { value: 10080, label: "1 semana antes" },
+];
 
-  useEffect(() => {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return;
+export function SettingsView({ initialSettings }: SettingsViewProps) {
+  const [settings, setSettings] = useState<SettingsData>(initialSettings);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-    try {
-      const parsed = JSON.parse(raw) as Partial<SettingsState>;
-      setSettings((current) => ({ ...current, ...parsed }));
-    } catch {
-      window.localStorage.removeItem(storageKey);
-    }
-  }, []);
-
-  const handleSave = () => {
-    window.localStorage.setItem(storageKey, JSON.stringify(settings));
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1800);
+  const update = <K extends keyof SettingsData>(key: K, value: SettingsData[K]) => {
+    setSettings((current) => ({ ...current, [key]: value }));
+    setError(null);
   };
 
-  const weekStartLabel = useMemo(
-    () => (settings.weekStart === "SEGUNDA" ? "Segunda-feira" : "Domingo"),
-    [settings.weekStart],
-  );
+  const updateNotif = <K extends keyof SettingsData["notificacoes"]>(
+    key: K,
+    value: SettingsData["notificacoes"][K],
+  ) => {
+    setSettings((current) => ({
+      ...current,
+      notificacoes: {
+        ...current.notificacoes,
+        [key]: value,
+      },
+    }));
+    setError(null);
+  };
+
+  const handleBrowserNotificationToggle = async () => {
+    const nextValue = !settings.notificacoes.browserNotif;
+
+    if (nextValue) {
+      if (!("Notification" in window)) {
+        setError("Este browser não suporta notificações nativas.");
+        toast.error("Este browser não suporta notificações nativas.");
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        setError("As notificações estão bloqueadas no browser. Ativa-as nas permissões do site.");
+        toast.error("Notificações bloqueadas no browser.");
+        return;
+      }
+
+      if (Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          setError("Permissão de notificações não concedida.");
+          toast.error("Permissão de notificações não concedida.");
+          return;
+        }
+      }
+
+      toast.success("Notificações do browser ativadas.");
+    }
+
+    updateNotif("browserNotif", nextValue);
+  };
+
+  const handleSave = () => {
+    if (settings.anoLectivoInicio && settings.anoLectivoFim) {
+      const start = new Date(settings.anoLectivoInicio);
+      const end = new Date(settings.anoLectivoFim);
+      if (start > end) {
+        setError("A data de início do ano académico deve ser anterior à data de fim.");
+        return;
+      }
+    }
+
+    startTransition(async () => {
+      const result = await updateSettingsAction(settings);
+      if (!result.success || !result.data) {
+        setError(result.error || "Não foi possível guardar as definições.");
+        return;
+      }
+
+      setSettings(result.data);
+      toast.success("Definições guardadas.");
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-6">
-      <div className="mb-8 flex items-start justify-between gap-4">
+    <div className="min-h-screen bg-slate-50 px-6 py-8">
+      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Definições</h1>
+          <p className="text-sm font-semibold text-blue-700">Definições</p>
+          <h1 className="mt-2 text-3xl font-bold text-gray-900">Preferências da aplicação</h1>
         </div>
-        <div className="flex items-center gap-4 text-gray-500">
-          <button className="rounded-lg p-2 hover:bg-white transition">
-            <Bell size={18} />
-          </button>
-          <Link
-            href="/perfil"
-            className="h-10 w-10 overflow-hidden rounded-full bg-linear-to-br from-blue-600 to-blue-800 shadow-sm"
-          >
-            <div className="flex h-full w-full items-center justify-center text-white font-semibold">
-              U
-            </div>
-          </Link>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={isPending}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50"
+        >
+          <Save className="h-4 w-4" />
+          {isPending ? "A guardar..." : "Guardar alterações"}
+        </button>
+      </header>
+
+      {error ? (
+        <div className="mb-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          {error}
         </div>
-      </div>
+      ) : null}
 
-      <div className="space-y-8">
-        <section className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="mb-6 flex items-center gap-3">
-            <Palette className="text-teal-700" size={18} />
-            <h2 className="text-xl font-bold text-gray-900">Aparência</h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Tema da aplicação
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Escolha o modo visual preferido
-              </p>
-            </div>
-
-            <div className="inline-flex rounded-xl bg-gray-100 p-1">
-              {(
-                [
-                  ["claro", "Claro"],
-                  ["escuro", "Escuro"],
-                  ["sistema", "Sistema"],
-                ] as const
-              ).map(([value, label]) => (
+      <div className="mx-auto max-w-5xl space-y-6">
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <SectionTitle icon={<Palette className="h-5 w-5" />} title="Aparência" />
+          <SettingRow title="Tema da aplicação" description="Escolhe o modo visual preferido.">
+            <div className="inline-flex rounded-lg bg-blue-50 p-1">
+              {themeOptions.map((option) => (
                 <button
-                  key={value}
-                  onClick={() =>
-                    setSettings((current) => ({ ...current, themeMode: value }))
-                  }
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                    settings.themeMode === value
-                      ? "bg-white text-teal-800 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
+                  key={option.value}
+                  type="button"
+                  onClick={() => update("modoAppearance", option.value)}
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition ${
+                    settings.modoAppearance === option.value
+                      ? "bg-white text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-blue-700"
                   }`}
                 >
-                  {label}
+                  {option.label}
                 </button>
               ))}
             </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                Cor de destaque
-              </p>
-              <p className="mt-1 text-sm text-gray-500">
-                Personalize a cor principal da interface
-              </p>
-            </div>
-
+          </SettingRow>
+          <SettingRow title="Cor de destaque" description="Personaliza a cor principal da interface.">
             <div className="flex items-center gap-3">
               {accentOptions.map((color) => (
                 <button
                   key={color}
-                  onClick={() =>
-                    setSettings((current) => ({
-                      ...current,
-                      accentColor: color,
-                    }))
-                  }
+                  type="button"
+                  onClick={() => update("corAcento", color)}
                   className={`h-9 w-9 rounded-full border-2 transition ${
-                    settings.accentColor === color
-                      ? "border-teal-900 scale-110"
-                      : "border-transparent"
+                    settings.corAcento === color ? "scale-110 border-gray-900" : "border-transparent"
                   }`}
                   style={{ backgroundColor: color }}
                   aria-label={`Cor ${color}`}
                 />
               ))}
             </div>
+          </SettingRow>
+        </section>
+
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <SectionTitle icon={<CalendarDays className="h-5 w-5" />} title="Agenda" />
+          <SettingRow title="Primeiro dia da semana">
+            <select
+              value={settings.primeiroDiaSemana}
+              onChange={(event) => update("primeiroDiaSemana", event.target.value)}
+              className="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600 sm:w-48"
+            >
+              <option value="SEGUNDA">Segunda-feira</option>
+              <option value="DOMINGO">Domingo</option>
+            </select>
+          </SettingRow>
+          <SettingRow title="Duração padrão da tarefa" description="Tempo estimado ao criar uma nova tarefa.">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={5}
+                max={480}
+                step={5}
+                value={settings.duracaoTarefaPadrao}
+                onChange={(event) => update("duracaoTarefaPadrao", Number(event.target.value))}
+                className="w-24 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-center text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <span className="text-sm text-gray-500">min</span>
+            </div>
+          </SettingRow>
+          <SettingRow title="Mostrar fins de semana" description="Exibir sábado e domingo no calendário.">
+            <Switch checked={settings.mostrarFimSemana} onChange={() => update("mostrarFimSemana", !settings.mostrarFimSemana)} />
+          </SettingRow>
+          <div className="mt-5 border-t border-gray-100 pt-5">
+            <h3 className="mb-4 text-sm font-bold text-gray-900">Ano académico</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <DateField label="Data de início" value={settings.anoLectivoInicio} onChange={(value) => update("anoLectivoInicio", value)} />
+              <DateField label="Data de fim" value={settings.anoLectivoFim} onChange={(value) => update("anoLectivoFim", value)} />
+            </div>
           </div>
         </section>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="mb-6 flex items-center gap-3">
-            <CalendarDays className="text-teal-700" size={18} />
-            <h2 className="text-xl font-bold text-gray-900">Agenda</h2>
-          </div>
-
-          <div className="grid gap-6">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Primeiro dia da semana
-                </p>
-              </div>
-              <select
-                value={settings.weekStart}
-                onChange={(e) =>
-                  setSettings((current) => ({
-                    ...current,
-                    weekStart: e.target.value as WeekStart,
-                  }))
-                }
-                className="w-full rounded-lg bg-blue-50 px-4 py-2 text-sm text-gray-700 outline-none lg:w-40"
-              >
-                <option value="SEGUNDA">Segunda-feira</option>
-                <option value="DOMINGO">Domingo</option>
-              </select>
+        <section className="rounded-xl bg-white p-6 shadow-sm">
+          <SectionTitle icon={<Bell className="h-5 w-5" />} title="Notificações" />
+          <SettingRow title="Lembretes" description="Ativar avisos para lembretes criados.">
+            <Switch checked={settings.notificacoes.notifLembretesAtivo} onChange={() => updateNotif("notifLembretesAtivo", !settings.notificacoes.notifLembretesAtivo)} />
+          </SettingRow>
+          <SettingRow title="Tarefas" description="Receber avisos antes do prazo das tarefas.">
+            <Switch checked={settings.notificacoes.notifTarefasAtivo} onChange={() => updateNotif("notifTarefasAtivo", !settings.notificacoes.notifTarefasAtivo)} />
+          </SettingRow>
+          <SettingRow title="Antecedência das tarefas">
+            <select
+              value={settings.notificacoes.notifTarefasAntecedencia}
+              onChange={(event) => updateNotif("notifTarefasAntecedencia", Number(event.target.value))}
+              className="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600 sm:w-48"
+            >
+              {taskLeadOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </SettingRow>
+          <SettingRow title="Tarefas atrasadas">
+            <Switch checked={settings.notificacoes.notifTarefasAtrasadas} onChange={() => updateNotif("notifTarefasAtrasadas", !settings.notificacoes.notifTarefasAtrasadas)} />
+          </SettingRow>
+          <SettingRow title="Sessões de estudo" description="Avisos de início, pausa e fim de sessão.">
+            <div className="flex flex-wrap gap-2">
+              <ToggleChip active={settings.notificacoes.notifEstudoInicio} onClick={() => updateNotif("notifEstudoInicio", !settings.notificacoes.notifEstudoInicio)}>Início</ToggleChip>
+              <ToggleChip active={settings.notificacoes.notifEstudoFimPausa} onClick={() => updateNotif("notifEstudoFimPausa", !settings.notificacoes.notifEstudoFimPausa)}>Pausa</ToggleChip>
+              <ToggleChip active={settings.notificacoes.notifEstudoFimSessao} onClick={() => updateNotif("notifEstudoFimSessao", !settings.notificacoes.notifEstudoFimSessao)}>Fim</ToggleChip>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Duração padrão da tarefa
-                </p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Tempo estimado ao criar uma nova tarefa
-                </p>
-              </div>
-              <div className="flex items-center gap-2 justify-start lg:justify-end">
+          </SettingRow>
+          <SettingRow title="Objectivos" description="Avisar antes do prazo dos objectivos.">
+            <div className="flex items-center gap-3">
+              <Switch checked={settings.notificacoes.notifObjectivosAtivo} onChange={() => updateNotif("notifObjectivosAtivo", !settings.notificacoes.notifObjectivosAtivo)} />
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={settings.notificacoes.notifObjectivosDias}
+                onChange={(event) => updateNotif("notifObjectivosDias", Number(event.target.value))}
+                className="w-20 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-center text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <span className="text-sm text-gray-500">dias antes</span>
+            </div>
+          </SettingRow>
+          <SettingRow title="Canais" description="Escolhe onde receber notificações.">
+            <div className="flex flex-wrap gap-2">
+              <ToggleChip active={settings.notificacoes.browserNotif} onClick={handleBrowserNotificationToggle}>Browser</ToggleChip>
+              <ToggleChip active={settings.notificacoes.emailNotif} onClick={() => updateNotif("emailNotif", !settings.notificacoes.emailNotif)}>Email</ToggleChip>
+            </div>
+          </SettingRow>
+          {settings.notificacoes.emailNotif ? (
+            <SettingRow title="Email de notificações">
+              <div className="relative w-full sm:w-80">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-400" />
                 <input
-                  type="number"
-                  min={5}
-                  step={5}
-                  value={settings.taskDuration}
-                  onChange={(e) =>
-                    setSettings((current) => ({
-                      ...current,
-                      taskDuration: Number(e.target.value) || 45,
-                    }))
-                  }
-                  className="w-20 rounded-lg bg-blue-50 px-3 py-2 text-center text-sm outline-none"
+                  type="email"
+                  value={settings.notificacoes.emailNotifAddress}
+                  onChange={(event) => updateNotif("emailNotifAddress", event.target.value)}
+                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-9 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600"
                 />
-                <span className="text-sm text-gray-500">min</span>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  Mostrar fins de semana
-                </p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Exibir sábado e domingo no calendário
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  setSettings((current) => ({
-                    ...current,
-                    showWeekend: !current.showWeekend,
-                  }))
-                }
-                className={`relative h-7 w-12 rounded-full transition ${settings.showWeekend ? "bg-teal-700" : "bg-gray-300"}`}
-              >
-                <span
-                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition ${
-                    settings.showWeekend ? "left-5" : "left-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="border-t border-gray-200 pt-5">
-              <p className="mb-4 text-sm font-medium text-gray-900">
-                Ano académico
-              </p>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-xs text-gray-500">
-                    Data de início
-                  </label>
-                  <input
-                    type="date"
-                    value={settings.academicStart}
-                    onChange={(e) =>
-                      setSettings((current) => ({
-                        ...current,
-                        academicStart: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg bg-blue-50 px-4 py-2 text-sm outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-xs text-gray-500">
-                    Data de fim
-                  </label>
-                  <input
-                    type="date"
-                    value={settings.academicEnd}
-                    onChange={(e) =>
-                      setSettings((current) => ({
-                        ...current,
-                        academicEnd: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-lg bg-blue-50 px-4 py-2 text-sm outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+            </SettingRow>
+          ) : null}
         </section>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-6">
+        <section className="rounded-xl bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Disciplinas</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Ajuste as matérias da sua organização académica
-              </p>
+              <div className="mb-2 flex items-center gap-2 text-blue-700">
+                <Settings2 className="h-5 w-5" />
+                <h2 className="font-bold text-gray-900">Disciplinas</h2>
+              </div>
+              <p className="text-sm text-gray-500">Ajusta matérias, cores, professores e detalhes académicos.</p>
             </div>
-            <Link
-              href="/disciplinas"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 hover:text-teal-800"
-            >
-              Gerir disciplinas <ChevronRight size={16} />
+            <Link href="/disciplinas" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
+              Gerir disciplinas <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         </section>
-
-        <section className="rounded-xl border border-gray-200 bg-white p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Resumo actual</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Estas definições ficam guardadas neste dispositivo.
-              </p>
-            </div>
-            <button
-              onClick={handleSave}
-              className="inline-flex items-center gap-2 rounded-lg bg-teal-700 px-5 py-3 text-sm font-medium text-white transition hover:bg-teal-800"
-            >
-              <Check size={16} />
-              Guardar alterações
-            </button>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500">
-                Tema
-              </p>
-              <p className="mt-2 text-sm font-semibold text-gray-900">
-                {settings.themeMode}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500">
-                Semana
-              </p>
-              <p className="mt-2 text-sm font-semibold text-gray-900">
-                {weekStartLabel}
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500">
-                Tarefa
-              </p>
-              <p className="mt-2 text-sm font-semibold text-gray-900">
-                {settings.taskDuration} minutos
-              </p>
-            </div>
-            <div className="rounded-xl bg-gray-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500">
-                Weekend
-              </p>
-              <p className="mt-2 text-sm font-semibold text-gray-900">
-                {settings.showWeekend ? "Visível" : "Oculto"}
-              </p>
-            </div>
-          </div>
-
-          {saved && (
-            <p className="mt-4 text-sm font-medium text-teal-700">
-              Definições guardadas com sucesso.
-            </p>
-          )}
-        </section>
       </div>
     </div>
+  );
+}
+
+function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="mb-5 flex items-center gap-2 text-blue-700">
+      {icon}
+      <h2 className="font-bold text-gray-900">{title}</h2>
+    </div>
+  );
+}
+
+function SettingRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-3 border-b border-gray-100 py-5 last:border-0 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div>
+        <p className="text-sm font-semibold text-gray-900">{title}</p>
+        {description ? <p className="mt-1 text-sm text-gray-500">{description}</p> : null}
+      </div>
+      <div className="lg:justify-self-end">{children}</div>
+    </div>
+  );
+}
+
+function Switch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`relative h-7 w-12 rounded-full transition ${checked ? "bg-blue-700" : "bg-gray-300"}`}
+    >
+      <span className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition ${checked ? "left-5" : "left-0.5"}`} />
+    </button>
+  );
+}
+
+function DateField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label>
+      <span className="mb-1 block text-sm font-medium text-gray-700">{label}</span>
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-600"
+      />
+    </label>
+  );
+}
+
+function ToggleChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+        active ? "bg-blue-700 text-white" : "bg-blue-50 text-gray-600 hover:text-blue-700"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

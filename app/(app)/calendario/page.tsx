@@ -20,15 +20,29 @@ export default async function CalendarioPage() {
     const eventos = result.data?.eventos || [];
     const avaliacoes = result.data?.avaliacoes || [];
     const tarefas = result.data?.tarefas || [];
+    const disciplinas = result.data?.disciplinas || [];
     const month = result.data?.month ?? hoje.getMonth();
     const year = result.data?.year ?? hoje.getFullYear();
 
-    // Convert dates to proper format
     const eventosFormatados = eventos.map((e: any) => ({
       id: e.id,
-      data: typeof e.data === "string" ? new Date(e.data) : e.data,
+      dataInicio:
+        typeof e.dataInicio === "string" ? new Date(e.dataInicio) : e.dataInicio,
+      dataFim: e.dataFim
+        ? typeof e.dataFim === "string"
+          ? new Date(e.dataFim)
+          : e.dataFim
+        : null,
       titulo: e.titulo || "Evento sem título",
-      tipo: e.tipo || "EVENTO",
+      tipo: e.tipo || "EVENTO_PESSOAL",
+      notas: e.notas ?? null,
+      disciplina: e.disciplina
+        ? {
+            id: e.disciplina.id,
+            nome: e.disciplina.nome,
+            cor: e.disciplina.cor,
+          }
+        : null,
     }));
 
     const avaliacoesFormatadas = avaliacoes.map((a: any) => ({
@@ -41,7 +55,13 @@ export default async function CalendarioPage() {
     const tarefasFormatadas = tarefas.map((t: any) => ({
       id: t.id,
       prazo: typeof t.prazo === "string" ? new Date(t.prazo) : t.prazo,
-      descricao: t.descricao || "Tarefa sem descrição",
+      titulo: t.titulo || "Tarefa sem título",
+      disciplina: t.disciplina
+        ? {
+            nome: t.disciplina.nome,
+            cor: t.disciplina.cor,
+          }
+        : null,
     }));
 
     return (
@@ -50,6 +70,7 @@ export default async function CalendarioPage() {
           eventos={eventosFormatados}
           avaliacoes={avaliacoesFormatadas}
           tarefas={tarefasFormatadas}
+          disciplinas={disciplinas}
           initialMonth={month}
           initialYear={year}
         />
@@ -59,14 +80,10 @@ export default async function CalendarioPage() {
     console.error("Calendar error:", error);
     return (
       <div className="min-h-screen bg-gray-50 px-6 py-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            Erro ao carregar calendário
-          </h1>
-          <p className="text-gray-600">
-            Ocorreu um erro ao recuperar os dados. Tente novamente mais tarde.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold text-red-600">Erro ao carregar calendário</h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Ocorreu um erro ao recuperar os dados. Tenta novamente mais tarde.
+        </p>
       </div>
     );
   }

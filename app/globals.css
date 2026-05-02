@@ -12,15 +12,378 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html {
+  background: #f8fafc;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 80%;
   }
 }
 
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background: #f8fafc;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior-y: none;
+}
+
+.custom-scrollbar-blue {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(147, 197, 253, 0.65) rgba(30, 58, 138, 0.35);
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-track {
+  background: rgba(30, 58, 138, 0.35);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb {
+  background: rgba(147, 197, 253, 0.65);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
+  background: rgba(191, 219, 254, 0.9);
+  background-clip: content-box;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+  animation: confetti-burst 360ms ease-out forwards;
+}
+
+.studypp-note-editor {
+  color: #111827;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.studypp-note-editor p {
+  margin: 0.5rem 0;
+}
+
+.studypp-note-editor h1 {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.875rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.studypp-note-editor h2 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.studypp-note-editor h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.studypp-note-editor ul,
+.studypp-note-editor ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.studypp-note-editor ul {
+  list-style: disc;
+}
+
+.studypp-note-editor ol {
+  list-style: decimal;
+}
+
+.studypp-note-editor blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid #3b82f6;
+  padding-left: 1rem;
+  color: #4b5563;
+}
+
+.studypp-note-editor .study-block {
+  margin: 1rem 0;
+  border: 1px solid #dbeafe;
+  border-left: 4px solid #2563eb;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  padding: 0.875rem 1rem;
+}
+
+.studypp-note-editor .study-block__label {
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.studypp-note-editor .study-block__content > :first-child {
+  margin-top: 0;
+}
+
+.studypp-note-editor .study-block__content > :last-child {
+  margin-bottom: 0;
+}
+
+.studypp-note-editor .study-block[data-study-block="definition"] {
+  border-color: #ccfbf1;
+  border-left-color: #0f766e;
+  background: #f0fdfa;
+}
+
+.studypp-note-editor .study-block[data-study-block="definition"] .study-block__label {
+  color: #0f766e;
+}
+
+.studypp-note-editor .study-block[data-study-block="formula"] {
+  border-color: #fde68a;
+  border-left-color: #b45309;
+  background: #fffbeb;
+}
+
+.studypp-note-editor .study-block[data-study-block="formula"] .study-block__label {
+  color: #92400e;
+}
+
+.studypp-note-editor .study-block[data-study-block="example"] {
+  border-color: #ddd6fe;
+  border-left-color: #7c3aed;
+  background: #f5f3ff;
+}
+
+.studypp-note-editor .study-block[data-study-block="example"] .study-block__label {
+  color: #6d28d9;
+}
+
+.studypp-note-editor .study-block[data-study-block="question"] {
+  border-color: #fecaca;
+  border-left-color: #dc2626;
+  background: #fef2f2;
+}
+
+.studypp-note-editor .study-block[data-study-block="question"] .study-block__label {
+  color: #b91c1c;
+}
+
+.studypp-note-editor .note-image {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  display: block;
+  height: auto;
+  margin: 1rem 0;
+  max-height: 520px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.studypp-note-editor .attachment-block {
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  color: #1e3a8a;
+  display: flex;
+  gap: 0.875rem;
+  margin: 1rem 0;
+  padding: 0.875rem 1rem;
+  text-decoration: none;
+}
+
+.studypp-note-editor .attachment-block:hover {
+  background: #dbeafe;
+}
+
+.studypp-note-editor .attachment-block__icon {
+  align-items: center;
+  background: #2563eb;
+  border-radius: 0.375rem;
+  color: #ffffff;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 800;
+  height: 2.25rem;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  width: 2.75rem;
+}
+
+.studypp-note-editor .attachment-block[data-attachment-block="audio"] .attachment-block__icon {
+  background: #0f766e;
+}
+
+.studypp-note-editor .attachment-block[data-attachment-block="video"] .attachment-block__icon {
+  background: #7c3aed;
+}
+
+.studypp-note-editor .attachment-block__body {
+  display: block;
+  min-width: 0;
+}
+
+.studypp-note-editor .attachment-block__title {
+  display: block;
+  font-weight: 700;
+}
+
+.studypp-note-editor .attachment-block__url {
+  color: #64748b;
+  display: block;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.studypp-note-editor .broken-note-reference {
+  background: #f3f4f6;
+  border-radius: 0.375rem;
+  color: #6b7280;
+  display: inline-flex;
+  font-size: 0.875em;
+  padding: 0.125rem 0.375rem;
+  text-decoration: line-through;
+}
+
+.studypp-note-editor code {
+  border-radius: 0.375rem;
+  background: #f3f4f6;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.875em;
+}
+
+.studypp-note-editor pre {
+  position: relative;
+  margin: 1rem 0;
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+  padding: 2.75rem 1rem 1rem;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.studypp-note-editor pre code {
+  background: transparent;
+  color: inherit;
+  display: block;
+  line-height: 1.7;
+  padding: 0;
+}
+
+.studypp-note-editor pre code::before {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-bottom: 1px solid #1e293b;
+  background: #111827;
+  color: #94a3b8;
+  content: "codigo";
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.55rem 0.85rem;
+}
+
+.studypp-note-editor pre code.language-javascript::before { content: "JavaScript"; }
+.studypp-note-editor pre code.language-typescript::before { content: "TypeScript"; }
+.studypp-note-editor pre code.language-tsx::before { content: "TSX"; }
+.studypp-note-editor pre code.language-jsx::before { content: "JSX"; }
+.studypp-note-editor pre code.language-html::before { content: "HTML"; }
+.studypp-note-editor pre code.language-css::before { content: "CSS"; }
+.studypp-note-editor pre code.language-json::before { content: "JSON"; }
+.studypp-note-editor pre code.language-python::before { content: "Python"; }
+.studypp-note-editor pre code.language-java::before { content: "Java"; }
+.studypp-note-editor pre code.language-csharp::before { content: "C#"; }
+.studypp-note-editor pre code.language-php::before { content: "PHP"; }
+.studypp-note-editor pre code.language-sql::before { content: "SQL"; }
+.studypp-note-editor pre code.language-bash::before { content: "Bash"; }
+.studypp-note-editor pre code.language-markdown::before { content: "Markdown"; }
+
+.studypp-note-editor .hljs-keyword,
+.studypp-note-editor .hljs-selector-tag,
+.studypp-note-editor .hljs-built_in {
+  color: #93c5fd;
+}
+
+.studypp-note-editor .hljs-string,
+.studypp-note-editor .hljs-attr,
+.studypp-note-editor .hljs-title {
+  color: #86efac;
+}
+
+.studypp-note-editor .hljs-number,
+.studypp-note-editor .hljs-literal,
+.studypp-note-editor .hljs-variable {
+  color: #fbbf24;
+}
+
+.studypp-note-editor .hljs-comment {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.studypp-note-editor .hljs-function,
+.studypp-note-editor .hljs-name {
+  color: #c4b5fd;
+}
+
+.studypp-note-editor ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.studypp-note-editor li[data-type="taskItem"] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.studypp-note-editor li[data-type="taskItem"] > label {
+  margin-top: 0.35rem;
+}
+
+.studypp-note-editor .is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+@keyframes confetti-burst {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-x), var(--confetti-y), 0)
+      rotate(var(--confetti-rotate)) scale(1);
+  }
 }

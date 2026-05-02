@@ -42,7 +42,13 @@ export async function getProfileAction() {
   }
 }
 
-export async function updateProfileAction(nome: string, email: string) {
+export async function updateProfileAction(
+  nome: string,
+  email: string,
+  anoEscolar: string,
+  curso: string,
+  bio: string,
+) {
   try {
     const session = await auth();
     if (!session?.user?.email) {
@@ -54,7 +60,9 @@ export async function updateProfileAction(nome: string, email: string) {
       where: { email: session.user.email },
       data: {
         nome,
-        email: email || session.user.email,
+        anoEscolar,
+        curso,
+        bio,
         updatedAt: new Date(),
       },
     });
@@ -63,6 +71,25 @@ export async function updateProfileAction(nome: string, email: string) {
   } catch (error) {
     console.error("Error updating profile:", error);
     return { success: false, error: "Erro ao atualizar perfil" };
+  }
+}
+
+export async function deleteAccountAction() {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { success: false, error: "Não autenticado" };
+    }
+
+    // Delete user and all related data (cascade configured in schema)
+    await prisma.utilizador.delete({
+      where: { email: session.user.email },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    return { success: false, error: "Erro ao eliminar conta" };
   }
 }
 

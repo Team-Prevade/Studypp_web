@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import type { DiaSemana } from "@prisma/client";
 
 export async function updatePerfilAction(nome: string, avatar?: string) {
   try {
@@ -142,7 +143,7 @@ export async function saveTimetableAction(aulas: AulaData[]) {
           data: {
             utilizadorId: user.id,
             disciplinaId: aula.disciplinaId,
-            diaSemana: aula.diaSemana,
+            diaSemana: aula.diaSemana as DiaSemana,
             horaInicio: aula.horaInicio,
             horaFim: aula.horaFim,
             repetir: "SEMANAL",

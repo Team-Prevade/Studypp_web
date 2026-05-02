@@ -1,0 +1,98 @@
+
+> studypp_web@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.15
+  - Local:        http://localhost:3000
+  - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1802ms (225 modules)
+ ○ Compiling /apontamentos ...
+ ✓ Compiled /apontamentos in 6.7s (1562 modules)
+ GET /apontamentos 307 in 7425ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 4.7s (1583 modules)
+ GET /login 200 in 4860ms
+ ✓ Compiled in 1041ms (585 modules)
+ ✓ Compiled in 322ms (585 modules)
+ ✓ Compiled in 209ms (585 modules)
+ ✓ Compiled in 249ms (585 modules)
+ ✓ Compiled in 394ms (585 modules)
+ ✓ Compiled /apontamentos in 417ms (986 modules)
+ GET /apontamentos 307 in 860ms
+ ✓ Compiled /login in 238ms (998 modules)
+ GET /login 200 in 387ms
+ ✓ Compiled in 773ms (585 modules)
+ ✓ Compiled in 407ms (585 modules)
+ ✓ Compiled in 289ms (585 modules)
+ ✓ Compiled in 332ms (585 modules)
+ ✓ Compiled in 311ms (585 modules)
+ ✓ Compiled in 276ms (585 modules)
+ ○ Compiling /apontamentos ...
+ ✓ Compiled /apontamentos in 879ms (986 modules)
+ GET /apontamentos 307 in 1289ms
+ ✓ Compiled /login in 305ms (998 modules)
+ GET /login 200 in 555ms
+ ✓ Compiled in 1586ms (585 modules)
+ ✓ Compiled in 418ms (587 modules)
+ ✓ Compiled /login in 338ms (506 modules)
+ GET /login?callbackUrl=http%3A%2F%2Flocalhost%3A3000%2Fdashboard 200 in 672ms
+ ○ Compiling /apontamentos ...
+ ✓ Compiled /apontamentos in 690ms (1000 modules)
+ GET /apontamentos 307 in 990ms
+ GET /login 200 in 70ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.3s (1083 modules)
+ GET /login 404 in 2857ms
+ ✓ Compiled /api/auth/[...nextauth] in 354ms (685 modules)
+ POST /login 200 in 1048ms
+ POST /login 200 in 39ms
+ GET /api/auth/session 200 in 1699ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/auth/session 200 in 19ms
+ GET /api/auth/session 200 in 25ms
+ GET /login 200 in 182ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 31ms
+ ✓ Compiled /favicon.ico in 187ms (713 modules)
+ GET /favicon.ico 200 in 373ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 113ms
+ ✓ Compiled /register in 479ms (1294 modules)
+ GET /register 200 in 649ms
+ GET /favicon.ico 200 in 79ms
+ GET /api/auth/session 200 in 162ms
+ GET /api/auth/session 200 in 113ms
+ POST /register 200 in 264ms
+ GET /api/auth/session 200 in 34ms
+ GET /api/auth/session 200 in 28ms
+ POST /register 200 in 59ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 78ms
+ GET /login 200 in 62ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 57ms
+ GET /favicon.ico 200 in 30ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 41ms
+ GET /_next/static/chunks/app/(auth)/login/page.js 404 in 26ms
+ ✓ Compiled in 449ms (589 modules)
+ ✓ Compiled in 263ms (589 modules)
+ ✓ Compiled in 1749ms (800 modules)
+ ✓ Compiled in 295ms (589 modules)
+ ✓ Compiled in 491ms (800 modules)
+ ✓ Compiled in 314ms (589 modules)
+ ✓ Compiled in 294ms (814 modules)
+ ✓ Compiled in 320ms (589 modules)
+ ✓ Compiled in 547ms (800 modules)
+ ✓ Compiled in 286ms (589 modules)
+ ✓ Compiled in 749ms (800 modules)
+ ✓ Compiled in 230ms (589 modules)
+ ✓ Compiled in 508ms (800 modules)
+ ○ Compiling /api/mobile/auth/check-email ...
+ ✓ Compiled /api/mobile/auth/check-email in 1009ms (56 modules)
+ POST /api/mobile/auth/check-email 200 in 4005ms
+ ✓ Compiled in 340ms (589 modules)
+ ✓ Compiled in 267ms (589 modules)
+ ✓ Compiled in 252ms (589 modules)
+ ✓ Compiled in 595ms (800 modules)
+ ✓ Compiled in 211ms (589 modules)
+ ✓ Compiled in 223ms (589 modules)

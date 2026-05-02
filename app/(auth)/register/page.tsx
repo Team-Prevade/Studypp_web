@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { registerAction } from "@/lib/auth-actions";
 
@@ -22,12 +22,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const result = await registerAction(
-        nome,
-        email,
-        password,
-        confirmPassword,
-      );
+      const result = await registerAction(nome, email, password, confirmPassword);
       if (result && !result.success) {
         setError(result.error);
       }
@@ -39,79 +34,78 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Coluna Esquerda - Azul */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-900 text-white flex-col justify-between p-16">
+    <div className="flex min-h-screen bg-white">
+      <div className="hidden flex-col justify-between bg-blue-900 p-16 text-white lg:flex lg:w-1/2">
         <div className="mb-2">
           <Logo size="md" withText={true} dark={true} />
         </div>
 
-        <div className="flex-1 flex flex-col justify-center">
-          <h1 className="text-6xl font-bold leading-tight mb-8 font-sans">
+        <div className="flex flex-1 flex-col justify-center">
+          <h1 className="mb-8 font-sans text-6xl font-bold leading-tight">
             Começa agora
             <br />a organizar
             <br />
             os teus estudos
           </h1>
-          <p className="text-lg leading-relaxed text-blue-100 font-light max-w-md">
-            Junte-se a milhares de estudantes que já transformaram a sua forma
-            de estudar.
+          <p className="max-w-md text-lg font-light leading-relaxed text-blue-100">
+            Junta-te aos estudantes que já transformaram a sua forma de estudar.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 pt-8 border-t border-blue-400 border-opacity-30">
-          <div className="relative w-16 h-16 shrink-0">
+        <div className="flex items-center gap-4 border-t border-blue-400/30 pt-8">
+          <div className="relative h-16 w-16 shrink-0">
             <div className="absolute inset-0 rounded-full bg-blue-700 shadow-sm"></div>
-            <div className="absolute inset-1 rounded-full bg-blue-600 flex items-center justify-center">
+            <div className="absolute inset-1 flex items-center justify-center rounded-full bg-blue-600">
               <span className="text-lg font-bold text-white">JS</span>
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-blue-50 italic text-base font-light leading-relaxed">
+            <p className="text-base font-light italic leading-relaxed text-blue-50">
               "Finalmente consegui organizar-me!"
             </p>
-            <p className="text-blue-300 text-sm font-medium mt-1">
+            <p className="mt-1 text-sm font-medium text-blue-300">
               João Silva, Aluno de Engenharia
             </p>
           </div>
         </div>
       </div>
 
-      {/* Coluna Direita - Formulário */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-6 py-12 sm:px-8 lg:px-12 overflow-y-auto">
+      <div className="flex w-full flex-col items-center justify-center overflow-y-auto px-6 py-12 sm:px-8 lg:w-1/2 lg:px-12">
         <div className="w-full max-w-md">
-          {/* Link para login */}
-          <Link
-            href="/login"
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Voltar para login</span>
-          </Link>
-
-          {/* Títulos */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="mb-10 flex gap-8 border-b border-gray-200">
+            <Link
+              href="/login"
+              className="pb-3 text-lg font-medium text-gray-500 transition-colors hover:text-gray-700"
+            >
+              Entrar
+            </Link>
+            <button
+              type="button"
+              aria-current="page"
+              className="border-b-2 border-blue-600 pb-3 text-lg font-medium text-blue-600"
+            >
               Criar conta
-            </h2>
-            <p className="text-gray-600">Preencha os dados para se registar.</p>
+            </button>
           </div>
 
-          {/* Erro Alert */}
+          <div className="mb-8">
+            <h2 className="mb-2 text-3xl font-bold text-gray-900">
+              Criar conta
+            </h2>
+            <p className="text-gray-600">
+              Preenche os dados para começares a organizar os teus estudos.
+            </p>
+          </div>
+
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
-          {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Nome */}
             <div>
-              <label
-                htmlFor="nome"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="nome" className="mb-2 block text-sm font-medium text-gray-700">
                 Nome completo
               </label>
               <input
@@ -122,16 +116,12 @@ export default function RegisterPage() {
                 onChange={(e) => setNome(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            {/* Email */}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
                 Email
               </label>
               <input
@@ -142,16 +132,12 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            {/* Palavra-passe */}
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
                 Palavra-passe
               </label>
               <div className="relative">
@@ -163,86 +149,61 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword((value) => !value)}
                   disabled={isLoading}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition-colors hover:text-gray-700 disabled:opacity-50"
+                  aria-label={showPassword ? "Esconder palavra-passe" : "Mostrar palavra-passe"}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Confirmar Palavra-passe */}
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+              <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-gray-700">
                 Confirmar palavra-passe
               </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirme a palavra-passe"
+                  placeholder="Confirma a palavra-passe"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() => setShowConfirmPassword((value) => !value)}
                   disabled={isLoading}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition-colors hover:text-gray-700 disabled:opacity-50"
+                  aria-label={showConfirmPassword ? "Esconder confirmação" : "Mostrar confirmação"}
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Botão Registar */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Registando...
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  A criar conta...
                 </>
               ) : (
-                <>
-                  Criar conta
-                  <span>→</span>
-                </>
+                <>Criar conta →</>
               )}
             </button>
-
-            {/* Já tem conta */}
-            <p className="text-center text-gray-600 text-sm mt-6">
-              Já tem uma conta?{" "}
-              <Link
-                href="/login"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Faça login
-              </Link>
-            </p>
           </form>
         </div>
       </div>

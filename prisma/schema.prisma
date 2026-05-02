@@ -119,6 +119,7 @@ model Utilizador {
   sessoesEstudo    SessaoEstudo[]
   lembretes        Lembrete[]
   notificacoes     NotificacaoApp[]
+  mobileBackups    MobileBackup[]
   preferenciasNotif PreferenciaNotificacao?
 }
 
@@ -174,6 +175,8 @@ model Aula {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  apontamentos Apontamento[] @relation("ApontamentoAula")
+
   @@index([utilizadorId, diaSemana])
 }
 
@@ -196,6 +199,8 @@ model Tarefa {
   progresso    Int              @default(0) // 0–100%
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
+
+  apontamentos Apontamento[] @relation("ApontamentoTarefa")
 
   @@index([utilizadorId, status])
   @@index([utilizadorId, prazo])
@@ -266,12 +271,21 @@ model Apontamento {
   utilizador   Utilizador  @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
   disciplinaId String?
   disciplina   Disciplina? @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
+  parentId     String?
+  parent       Apontamento? @relation("SubApontamentos", fields: [parentId], references: [id], onDelete: Cascade)
+  subNotas     Apontamento[] @relation("SubApontamentos")
+  aulaId       String?
+  aula         Aula?       @relation("ApontamentoAula", fields: [aulaId], references: [id], onDelete: SetNull)
+  tarefaId     String?
+  tarefa       Tarefa?     @relation("ApontamentoTarefa", fields: [tarefaId], references: [id], onDelete: SetNull)
   titulo       String      @default("Sem título")
   conteudo     String?     // rich text stored as HTML or markdown
+  tipo         String      @default("LIVRE")
   fixado       Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
+  @@index([utilizadorId, parentId])
   @@index([utilizadorId, updatedAt])
 }
 
@@ -401,4 +415,23 @@ model PreferenciaNotificacao {
   emailNotifAddress       String?
 
   updatedAt               DateTime   @updatedAt
+}
+
+model MobileBackup {
+  id              String     @id @default(cuid())
+  utilizadorId    String
+  utilizador      Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  deviceId        String
+  backupId        String
+  clientVersion   String?
+  schemaVersion   Int
+  clientCreatedAt DateTime?
+  payload         Json
+  counts          Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([utilizadorId, backupId])
+  @@index([utilizadorId, deviceId])
+  @@index([utilizadorId, createdAt])
 }

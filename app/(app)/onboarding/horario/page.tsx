@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight, Plus, X } from "lucide-react";
+import { ArrowRight, CalendarPlus, Loader2, Plus, X } from "lucide-react";
 import {
-  saveTimetableAction,
   getDisciplinasAction,
+  saveTimetableAction,
 } from "@/lib/onboarding-actions";
 
 interface Disciplina {
@@ -21,7 +21,20 @@ interface Aula {
   horaFim: string;
 }
 
-const DIAS = ["SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA"];
+interface GridCell {
+  dia: string;
+  hora: string;
+  disciplina?: Disciplina;
+}
+
+const DIAS = ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"];
+const DAY_LABELS: Record<string, string> = {
+  SEGUNDA: "Segunda",
+  TERCA: "Terça",
+  QUARTA: "Quarta",
+  QUINTA: "Quinta",
+  SEXTA: "Sexta",
+};
 const HORAS = [
   "07:00",
   "08:00",
@@ -38,10 +51,9 @@ const HORAS = [
   "19:00",
 ];
 
-interface GridCell {
-  dia: string;
-  hora: string;
-  disciplina?: Disciplina;
+function nextHour(time: string) {
+  const hour = Number(time.split(":")[0]);
+  return `${String(hour + 1).padStart(2, "0")}:00`;
 }
 
 export default function HorarioStep() {
@@ -53,10 +65,9 @@ export default function HorarioStep() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDia, setSelectedDia] = useState("SEGUNDA");
   const [selectedHora, setSelectedHora] = useState("08:00");
-  const [selectedDisciplina, setSelectedDisciplina] = useState<string>("");
+  const [selectedDisciplina, setSelectedDisciplina] = useState("");
   const [error, setError] = useState("");
 
-  // Load disciplinas on mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -67,13 +78,12 @@ export default function HorarioStep() {
       }
       setLoading(false);
     };
+
     loadData();
   }, []);
 
-  const getCellKey = (dia: string, hora: string) => `${dia}-${hora}`;
-
   const getAulaAtCell = (dia: string, hora: string) => {
-    return gridAulas.find((a) => a.dia === dia && a.hora === hora);
+    return gridAulas.find((aula) => aula.dia === dia && aula.hora === hora);
   };
 
   const handleAddAula = () => {
@@ -82,30 +92,30 @@ export default function HorarioStep() {
       return;
     }
 
-    const existingAula = getAulaAtCell(selectedDia, selectedHora);
-    if (existingAula) {
+    if (getAulaAtCell(selectedDia, selectedHora)) {
       setError("Já existe uma aula neste horário");
       return;
     }
 
-    const disciplina = disciplinas.find((d) => d.id === selectedDisciplina);
+    const disciplina = disciplinas.find((item) => item.id === selectedDisciplina);
     if (!disciplina) return;
 
-    setGridAulas([
-      ...gridAulas,
+    setGridAulas((current) => [
+      ...current,
       {
         dia: selectedDia,
         hora: selectedHora,
         disciplina,
       },
     ]);
-
     setError("");
     setShowAddModal(false);
   };
 
   const handleRemoveAula = (dia: string, hora: string) => {
-    setGridAulas(gridAulas.filter((a) => !(a.dia === dia && a.hora === hora)));
+    setGridAulas((current) =>
+      current.filter((aula) => !(aula.dia === dia && aula.hora === hora)),
+    );
   };
 
   const handleSave = async () => {
@@ -113,13 +123,14 @@ export default function HorarioStep() {
     setError("");
 
     try {
-      // Convert grid to Aula format
-      const aulas: Aula[] = gridAulas.map((cell) => ({
-        disciplinaId: cell.disciplina!.id,
-        diaSemana: cell.dia,
-        horaInicio: cell.hora,
-        horaFim: `${parseInt(cell.hora) + 1}:00`,
-      }));
+      const aulas: Aula[] = gridAulas
+        .filter((cell) => cell.disciplina)
+        .map((cell) => ({
+          disciplinaId: cell.disciplina!.id,
+          diaSemana: cell.dia,
+          horaInicio: cell.hora,
+          horaFim: nextHour(cell.hora),
+        }));
 
       const result = await saveTimetableAction(aulas);
 
@@ -128,7 +139,6 @@ export default function HorarioStep() {
         return;
       }
 
-      // Redirect to next step
       router.push("/onboarding/conclusao");
     } catch (err) {
       console.error("Error:", err);
@@ -140,52 +150,50 @@ export default function HorarioStep() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
           Configura o teu horário
         </h1>
         <p className="text-gray-600">
-          Clica nos blocos para atribuir disciplinas.
+          Clica nos blocos para atribuir disciplinas ao teu horário semanal.
         </p>
       </div>
 
-      {/* Content */}
-      <div className="bg-white rounded-lg shadow p-8">
+      <div className="rounded-lg bg-white p-8 shadow">
         {disciplinas.length === 0 ? (
-          <div className="p-8 text-center bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-gray-600 mb-4">Nenhuma disciplina adicionada.</p>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+            <p className="mb-4 text-gray-600">Nenhuma disciplina adicionada.</p>
             <button
+              type="button"
               onClick={() => router.push("/onboarding/disciplinas")}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
             >
-              Voltar para Disciplinas
+              Voltar para disciplinas
             </button>
           </div>
         ) : (
           <>
-            {/* Grid Schedule */}
-            <div className="overflow-x-auto mb-8">
+            <div className="mb-8 overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
-                    <th className="w-16 text-center text-sm font-semibold text-gray-700 bg-gray-50 border border-gray-200 p-2">
+                    <th className="w-16 border border-gray-200 bg-gray-50 p-2 text-center text-sm font-semibold text-gray-700">
                       Hora
                     </th>
                     {DIAS.map((dia) => (
                       <th
                         key={dia}
-                        className="text-center text-sm font-semibold text-gray-700 bg-gray-50 border border-gray-200 p-2"
+                        className="border border-gray-200 bg-gray-50 p-2 text-center text-sm font-semibold text-gray-700"
                       >
-                        {dia.charAt(0) + dia.slice(1).toLowerCase()}
+                        {DAY_LABELS[dia]}
                       </th>
                     ))}
                   </tr>
@@ -193,43 +201,45 @@ export default function HorarioStep() {
                 <tbody>
                   {HORAS.map((hora) => (
                     <tr key={hora}>
-                      <td className="text-center text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 p-2">
+                      <td className="border border-gray-200 bg-gray-50 p-2 text-center text-xs font-medium text-gray-600">
                         {hora}
                       </td>
                       {DIAS.map((dia) => {
                         const aula = getAulaAtCell(dia, hora);
+                        const disciplina = aula?.disciplina;
+
                         return (
                           <td
                             key={`${dia}-${hora}`}
-                            className="h-12 border border-gray-200 p-1 cursor-pointer hover:bg-gray-50"
+                            className="h-12 cursor-pointer border border-gray-200 p-1 hover:bg-gray-50"
                             onClick={() => {
-                              if (aula) {
+                              if (disciplina) {
                                 handleRemoveAula(dia, hora);
-                              } else {
-                                setSelectedDia(dia);
-                                setSelectedHora(hora);
-                                setShowAddModal(true);
+                                return;
                               }
+
+                              setSelectedDia(dia);
+                              setSelectedHora(hora);
+                              setError("");
+                              setShowAddModal(true);
                             }}
                           >
-                            {aula ? (
+                            {disciplina ? (
                               <div
-                                className="h-full rounded flex items-center justify-center text-xs font-semibold text-white overflow-hidden hover:ring-2 hover:ring-red-500"
-                                style={{
-                                  backgroundColor: aula.disciplina.cor,
-                                }}
-                                title={`Click para remover ${aula.disciplina.nome}`}
+                                className="flex h-full items-center justify-center overflow-hidden rounded text-xs font-semibold text-white hover:ring-2 hover:ring-red-500"
+                                style={{ backgroundColor: disciplina.cor }}
+                                title={`Clique para remover ${disciplina.nome}`}
                               >
-                                <span className="text-center px-1 truncate">
-                                  {aula.disciplina.nome}
+                                <span className="truncate px-1 text-center">
+                                  {disciplina.nome}
                                 </span>
                               </div>
                             ) : (
                               <button
                                 type="button"
-                                className="w-full h-full flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                className="flex h-full w-full items-center justify-center rounded text-gray-400 hover:bg-blue-50 hover:text-blue-600"
                               >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="h-4 w-4" />
                               </button>
                             )}
                           </td>
@@ -241,15 +251,13 @@ export default function HorarioStep() {
               </table>
             </div>
 
-            {/* Error */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
 
-            {/* Stats */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
               <p className="text-sm text-blue-700">
                 <strong>
                   {gridAulas.length} aula{gridAulas.length !== 1 ? "s" : ""}
@@ -261,57 +269,77 @@ export default function HorarioStep() {
         )}
       </div>
 
-      {/* Modal Add Aula */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Adicionar aula {selectedDia} às {selectedHora}
-            </h3>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Disciplina
-              </label>
-              <select
-                value={selectedDisciplina}
-                onChange={(e) => setSelectedDisciplina(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              >
-                {disciplinas.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-xl border border-blue-100 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-blue-50/70 px-6 py-5">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
+                  <CalendarPlus className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Adicionar aula
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {DAY_LABELS[selectedDia]} às {selectedHora}
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-white hover:text-gray-800"
+                aria-label="Fechar modal"
               >
-                Cancelar
+                <X className="h-5 w-5" />
               </button>
-              <button
-                type="button"
-                onClick={handleAddAula}
-                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Adicionar
-              </button>
+            </div>
+
+            <div className="px-6 py-5">
+              <div className="mb-6">
+                <label className="mb-2 block text-sm font-semibold text-gray-800">
+                  Disciplina
+                </label>
+                <select
+                  value={selectedDisciplina}
+                  onChange={(e) => setSelectedDisciplina(e.target.value)}
+                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-gray-900 outline-none transition-colors focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-600"
+                >
+                  {disciplinas.map((disciplina) => (
+                    <option key={disciplina.id} value={disciplina.id}>
+                      {disciplina.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 rounded-lg border border-gray-200 px-4 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddAula}
+                  className="flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700"
+                >
+                  Adicionar
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Buttons */}
-      <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+      <div className="mt-8 flex justify-between border-t border-gray-200 pt-6">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="rounded-lg px-6 py-2 text-gray-700 transition-colors hover:bg-gray-100"
         >
           Voltar
         </button>
@@ -319,17 +347,17 @@ export default function HorarioStep() {
           type="button"
           onClick={handleSave}
           disabled={savingLoading}
-          className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {savingLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Guardando...</span>
             </>
           ) : (
             <>
               <span>Continuar</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </button>

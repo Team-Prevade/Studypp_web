@@ -1,0 +1,204 @@
+You are a senior product engineer building "Study++" — a personal
+school organiser web app for students. Before writing any component,
+internalize these design principles completely.
+
+═══════════════════════════════════════════════
+IDENTITY
+═══════════════════════════════════════════════
+This app must feel like a premium productivity tool — think Linear,
+Notion, or Superlist. Clean, fast, intentional. Every pixel has a reason.
+It must NOT look like a generic AI-generated app, a university project,
+or a template.
+
+═══════════════════════════════════════════════
+COLOR SYSTEM — use ONLY these tokens
+═══════════════════════════════════════════════
+Primary blue:
+  blue-50:  #EFF6FF  → sidebar background, hover states, subtle fills
+  blue-100: #DBEAFE  → active nav item background
+  blue-500: #3B82F6  → interactive elements, links
+  blue-600: #185FA5  → primary buttons, active states, key numbers
+  blue-700: #1D4ED8  → button hover
+  blue-800: #0C447C  → text on blue backgrounds
+  blue-900: #1E3A5F  → sidebar text, strong headings
+
+Supporting:
+  amber-400: #FBBF24  → deadlines ≤2 days, urgent badges
+  amber-50:  #FFFBEB  → urgent card backgrounds
+  red-500:   #EF4444  → overdue, errors, tests
+  red-50:    #FEF2F2  → overdue card backgrounds
+  green-600: #16A34A  → completed, good grades (≥14)
+  green-50:  #F0FDF4  → completed card backgrounds
+  purple-500:#8B5CF6  → study sessions, goals, pomodoro
+  purple-50: #F5F3FF  → study card backgrounds
+
+Neutrals (use these for 80% of the UI):
+  gray-50:  #F9FAFB  → page backgrounds
+  gray-100: #F3F4F6  → card backgrounds, input fills
+  gray-200: #E5E7EB  → borders, dividers
+  gray-400: #9CA3AF  → placeholder text, icons inactive
+  gray-600: #4B5563  → secondary text, labels
+  gray-900: #111827  → primary text, headings
+
+═══════════════════════════════════════════════
+TYPOGRAPHY
+═══════════════════════════════════════════════
+Font: Inter (via next/font)
+Scale (use ONLY these sizes):
+  text-xs:   12px → metadata, timestamps, helper text
+  text-sm:   14px → body text, list items, labels
+  text-base: 16px → default, card content
+  text-lg:   18px → card titles, section headings
+  text-xl:   20px → page section titles
+  text-2xl:  24px → page titles
+  text-3xl:  30px → metric numbers, dashboard stats
+  text-4xl:  36px → hero numbers only
+
+Weights:
+  font-normal:  400 → body text
+  font-medium:  500 → labels, nav items, badge text
+  font-semibold:600 → card titles, important values
+  font-bold:    700 → page titles, metric numbers only
+
+Rule: sentence case always. Never ALL CAPS except badge labels.
+
+═══════════════════════════════════════════════
+SPACING SYSTEM
+═══════════════════════════════════════════════
+Use ONLY multiples of 4px (Tailwind's default scale).
+Never use arbitrary values like p-[13px] or mt-[7px].
+Card padding: p-4 (16px) for compact, p-6 (24px) for normal
+Section gaps: gap-4 for tight, gap-6 for normal, gap-8 for loose
+Page padding: px-6 py-6 for main content area
+
+═══════════════════════════════════════════════
+COMPONENT RULES
+═══════════════════════════════════════════════
+
+Cards:
+- Background: white (bg-white)
+- Border: border border-gray-200 (0.5–1px, never thicker)
+- Radius: rounded-xl (12px) for cards, rounded-lg (8px) for inner elements
+- No box shadows by default. Use shadow-sm ONLY on hover.
+- Hover state: transition-shadow duration-150 hover:shadow-sm
+
+Buttons:
+- Primary: bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-4 py-2
+- Secondary: bg-white border border-gray-200 text-gray-700 hover:bg-gray-50
+- Ghost: text-blue-600 hover:bg-blue-50 rounded-lg px-3 py-1.5
+- Destructive: bg-red-500 text-white hover:bg-red-600
+- All buttons: font-medium text-sm, transition-colors duration-150
+- No rounded-full on buttons. rounded-lg only.
+
+Inputs:
+- bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm
+- Focus: focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+- Placeholder: text-gray-400
+
+Badges:
+- Small pill: rounded-full px-2 py-0.5 text-xs font-medium
+- Colors match semantic meaning (see color system above)
+- Never use colored backgrounds for neutral information
+
+Sidebar:
+- Width: 220px fixed
+- Background: blue-50 (#EFF6FF)
+- Nav item active: bg-blue-100 text-blue-900 font-medium
+  + 3px left border accent in blue-600
+- Nav item inactive: text-gray-600 hover:bg-blue-50/70 hover:text-gray-900
+- Section labels: text-xs font-medium text-gray-400 uppercase tracking-wider
+- Bottom: user avatar + name + settings icon
+
+Top bar:
+- Height: 56px
+- Background: white, border-b border-gray-200
+- Page title: text-xl font-semibold text-gray-900
+- Right: notification bell + avatar
+
+═══════════════════════════════════════════════
+ANIMATION RULES (Framer Motion)
+═══════════════════════════════════════════════
+Use animation ONLY when it adds meaning. Never animate for decoration.
+
+Allowed animations:
+- Page transitions: opacity 0→1, y 8→0, duration 0.2s ease-out
+- List item enter: opacity 0→1, x -4→0, staggered 0.05s per item
+- Task completion: opacity 1→0.5, x 0→4, duration 0.2s
+- Modal enter: scale 0.97→1, opacity 0→1, duration 0.15s
+- Notification slide-in: x 100→0, duration 0.25s ease-out
+- Progress bar fill: width animates on mount, duration 0.6s ease-out
+
+Never animate: colors, backgrounds, borders, font sizes.
+Keep durations between 150ms–300ms. Nothing slower than 400ms.
+
+═══════════════════════════════════════════════
+SUBJECT COLOR SYSTEM
+═══════════════════════════════════════════════
+Students assign a color to each subject during onboarding.
+12 preset options:
+  #3B82F6 blue    #8B5CF6 purple   #EC4899 pink
+  #EF4444 red     #F97316 orange   #EAB308 yellow
+  #22C55E green   #14B8A6 teal     #06B6D4 cyan
+  #6366F1 indigo  #84CC16 lime     #A855F7 violet
+
+Usage rules:
+- Subject color appears as a 3px left border on task cards
+- Subject color as a filled dot (8px) in badges and lists
+- Subject color as a light tint (10% opacity) on calendar event pills
+- Subject color as the block fill (20% opacity) on schedule grid
+- NEVER use subject color as full background on large areas
+
+═══════════════════════════════════════════════
+EMPTY STATES
+═══════════════════════════════════════════════
+Every empty state must have:
+1. A simple SVG illustration (inline, 120px, gray-300 strokes)
+2. A heading: text-base font-medium text-gray-900
+3. A subtext: text-sm text-gray-500, 1–2 lines max
+4. A CTA button if there's an action to take
+
+Examples:
+- No tasks: "Sem tarefas pendentes" / "Adiciona a tua primeira tarefa"
+- No notes: "Nenhum apontamento ainda" / "Começa a escrever"
+- No grades: "Sem notas registadas" / "Adiciona a primeira avaliação"
+
+═══════════════════════════════════════════════
+LOADING STATES
+═══════════════════════════════════════════════
+Use skeleton screens, never spinners for page content.
+Skeleton: bg-gray-200 rounded animate-pulse
+Match skeleton shape exactly to the real content shape.
+Buttons in loading state: opacity-70 cursor-not-allowed
+  + spinner icon (16px) replacing the button label
+
+═══════════════════════════════════════════════
+WHAT TO NEVER DO
+═══════════════════════════════════════════════
+- Never use gradients on UI elements (only allowed in illustrations)
+- Never use drop shadows larger than shadow-sm
+- Never use more than 3 colors on the same card
+- Never use emoji in the UI
+- Never use ALL CAPS for headings or body text
+- Never use rounded-full on rectangular elements
+- Never use border-2 or thicker — always border (1px) or border-0
+- Never use absolute pixel values in className (no p-[13px])
+- Never nest cards inside cards more than 1 level deep
+- Never show more than 4 metric cards in a single row
+- Never use Tremor, DaisyUI, NextUI, or Material UI components
+- Never import from @tremor/react, daisyui, or @mui/*
+
+═══════════════════════════════════════════════
+LIBRARIES APPROVED FOR USE
+═══════════════════════════════════════════════
+✅ shadcn/ui — base components
+✅ @radix-ui/* — primitives (already in shadcn)
+✅ react-aria — calendar, date picker, drag & drop
+✅ framer-motion — animations only as specified above
+✅ recharts — charts and graphs only
+✅ tailwind-variants — component variants
+✅ lucide-react — icons only
+✅ next-themes — light/dark mode
+✅ @tanstack/react-query — data fetching
+✅ react-hook-form + zod — forms and validation
+
+❌ Everything else requires explicit approval.

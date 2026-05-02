@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpen, CheckCircle2, User, BookMarked, Clock } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, CheckCircle2, User, BookMarked, Clock, Loader2 } from "lucide-react";
+import { completeOnboardingAction } from "@/lib/onboarding-actions";
 
 const steps = [
   { id: 1, slug: "perfil", label: "Perfil", icon: User },
@@ -18,14 +19,29 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isSkipping, setIsSkipping] = useState(false);
   const currentStep = steps.find((s) => pathname.includes(s.slug));
   const currentStepNumber = currentStep?.id || 1;
+
+  const handleSkip = async () => {
+    setIsSkipping(true);
+    const result = await completeOnboardingAction();
+
+    if (result.success) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    setIsSkipping(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
         {/* Sidebar */}
-        <div className="w-72 bg-white border-r border-gray-200">
+        <div className="relative w-72 bg-white border-r border-gray-200">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3 mb-8">
@@ -45,6 +61,21 @@ export default function OnboardingLayout({
                 />
               </div>
             </div>
+            <button
+              type="button"
+              onClick={handleSkip}
+              disabled={isSkipping}
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSkipping ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  A saltar...
+                </>
+              ) : (
+                "Pular configuração"
+              )}
+            </button>
           </div>
 
           {/* Steps Navigation */}

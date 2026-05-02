@@ -14,36 +14,36 @@ export default async function NotasPage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="min-h-screen bg-gray-50 px-6 py-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-6 py-6">
         <div className="rounded-xl border border-gray-200 bg-white p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
+          <h1 className="mb-4 text-2xl font-bold text-red-600">
             Erro ao carregar notas
           </h1>
           <p className="text-gray-600">
-            Não foi possível carregar seus dados de notas.
+            Não foi possível carregar os dados de notas.
           </p>
         </div>
       </div>
     );
   }
 
-  const { data } = result;
+  const avaliacoes = result.data.avaliacoes.map((avaliacao) => ({
+    id: avaliacao.id,
+    disciplinaId: avaliacao.disciplinaId,
+    nome: avaliacao.nome,
+    tipo: avaliacao.tipo,
+    data: new Date(avaliacao.data).toISOString(),
+    nota: avaliacao.nota,
+    peso: avaliacao.peso,
+    observacoes: avaliacao.observacoes,
+    disciplina: avaliacao.disciplina,
+    createdAt: new Date(avaliacao.createdAt).toISOString(),
+  }));
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Registo de notas</h1>
-        <p className="text-gray-600 mt-2">
-          Acompanha a teu progresso académico e médias
-        </p>
-      </div>
-
-      <GradesView
-        mediaGlobal={data.mediaGlobal}
-        totalAvaliacoes={data.totalAvaliacoes}
-        mediasPorDisciplina={data.mediasPorDisciplina}
-        escalaAvaliacao={data.escalaAvaliacao}
-      />
-    </div>
+    <GradesView
+      avaliacoes={avaliacoes}
+      disciplinas={result.data.disciplinas}
+    />
   );
 }

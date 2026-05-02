@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,8 +15,12 @@ import {
   BarChart3,
   Bell,
   User,
+  SlidersHorizontal,
   LogOut,
   BookOpen as BookIcon,
+  ChevronDown,
+  Menu,
+  X,
 } from "lucide-react";
 import { logoutAction } from "@/lib/auth-actions";
 
@@ -31,33 +36,129 @@ const menuItems = [
   { href: "/temporizador", label: "Temporizador", icon: Timer },
   { href: "/estatisticas", label: "Estatísticas", icon: BarChart3 },
   { href: "/lembretes", label: "Lembretes", icon: Bell },
-  { href: "/perfil", label: "Perfil", icon: User },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const closeMenus = () => {
+    setIsAccountMenuOpen(false);
+    setIsMobileOpen(false);
+  };
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-gradient-to-b from-blue-900 via-blue-800 to-blue-900 text-white overflow-y-auto">
+    <>
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-blue-800 bg-blue-900 px-4 text-white shadow-sm lg:hidden">
+        <div className="flex items-center gap-3">
+          <BookIcon className="h-6 w-6" />
+          <div>
+            <h1 className="text-lg font-bold leading-none">Study++</h1>
+            <p className="mt-1 text-xs text-blue-100">O teu assistente digital</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsMobileOpen(true)}
+          className="rounded-lg border border-blue-700 bg-blue-800 p-2 text-blue-50 transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          aria-label="Abrir navegação"
+          aria-expanded={isMobileOpen}
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </header>
+
+      {isMobileOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
+          onClick={closeMenus}
+          aria-label="Fechar navegação"
+        />
+      ) : null}
+
+      <aside
+        className={`fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] flex-col bg-linear-to-b from-blue-900 via-blue-800 to-blue-900 text-white shadow-2xl transition-transform duration-200 lg:z-30 lg:w-56 lg:translate-x-0 lg:shadow-none ${
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       {/* Header */}
-      <div className="p-6 border-b border-blue-700">
-        <div className="flex items-center gap-3 mb-2">
-          <BookIcon className="w-6 h-6" />
-          <h1 className="text-xl font-bold">Study++</h1>
+      <div className="border-b border-blue-700 p-6">
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <BookIcon className="w-6 h-6" />
+            <h1 className="text-xl font-bold">Study++</h1>
+          </div>
+
+          <button
+            type="button"
+            onClick={closeMenus}
+            className="rounded-lg p-2 text-blue-100 transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200 lg:hidden"
+            aria-label="Fechar navegação"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsAccountMenuOpen((prev) => !prev)}
+              className="flex items-center gap-1 rounded-full border border-blue-600 bg-blue-800/80 px-2 py-1 text-blue-100 transition-colors hover:bg-blue-700/80"
+              aria-label="Abrir menu da conta"
+              aria-expanded={isAccountMenuOpen}
+            >
+              <User className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4" />
+            </button>
+
+            {isAccountMenuOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-blue-600 bg-blue-950 p-1 shadow-lg">
+                <Link
+                  href="/perfil"
+                  onClick={closeMenus}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-800"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Perfil</span>
+                </Link>
+                <Link
+                  href="/definicoes"
+                  onClick={closeMenus}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-800"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  <span>Definições</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => logoutAction()}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-300 transition-colors hover:bg-red-500/15 hover:text-red-200"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Terminar sessão</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <p className="text-sm text-blue-100">O teu assistente digital</p>
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-1">
+      <nav className="custom-scrollbar-blue flex-1 space-y-1 overflow-y-auto p-4">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isCalendarioAtivo =
+            item.href === "/calendario" &&
+            (pathname === "/calendario" || pathname.startsWith("/calendario/"));
+          const isActive = pathname === item.href || isCalendarioAtivo;
           const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={closeMenus}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
                   ? "bg-white text-blue-900 font-semibold"
@@ -71,16 +172,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout Button */}
-      <div className="absolute bottom-6 left-4 right-4">
-        <button
-          onClick={() => logoutAction()}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-blue-700 hover:bg-blue-600 text-white transition-colors text-sm font-medium"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
-      </div>
     </aside>
+    </>
   );
 }

@@ -8,7 +8,6 @@ import {
   formatarHora,
   formatarMinutos,
   formatarTempoRelativo,
-  pluralizar,
 } from "@/lib/date-utils";
 import {
   CheckCircle2,
@@ -42,14 +41,18 @@ export default async function DashboardPage() {
     id: string;
     horaInicio: string;
     horaFim: string;
-    disciplina: { nome: string; cor: string } | null;
+    sala?: string | null;
+    disciplina: { nome: string; cor?: string | null } | null;
   }>;
   const tarefasPendentes = data.tarefasPendentes as unknown as Array<{
     id: string;
-    descricao: string;
-    prazo: Date | null;
+    titulo: string;
+    descricao?: string | null;
+    prazo: Date | string | null;
     status: string;
-    disciplina: { nome: string } | null;
+    statusCalculado: string;
+    prioridade: string;
+    disciplina: { nome: string; cor?: string | null } | null;
   }>;
 
   return (
@@ -105,7 +108,7 @@ export default async function DashboardPage() {
                 {data.proximoTeste ? (
                   <>
                     <p className="text-3xl font-bold text-gray-900">
-                      {formatarTempoRelativo(data.proximoTeste.data)}
+                      {formatarTempoRelativo(new Date(data.proximoTeste.data))}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
                       {data.proximoTeste.disciplina?.nome}
@@ -179,6 +182,7 @@ export default async function DashboardPage() {
                       <p className="text-sm text-gray-600">
                         {formatarHora(aula.horaInicio)} -{" "}
                         {formatarHora(aula.horaFim)}
+                        {aula.sala ? ` · ${aula.sala}` : ""}
                       </p>
                     </div>
                   </div>
@@ -206,28 +210,30 @@ export default async function DashboardPage() {
                     className="p-3 rounded-lg bg-gray-50 border border-gray-200"
                   >
                     <div className="flex items-start gap-2 mb-2">
-                      {tarefa.status === "ATRASADA" ? (
+                      {tarefa.statusCalculado === "ATRASADA" ? (
                         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                       ) : (
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                          {tarefa.descricao}
+                          {tarefa.titulo}
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          {tarefa.disciplina?.nome}
+                          {tarefa.disciplina?.nome || tarefa.descricao}
                         </p>
                       </div>
                     </div>
                     <p
                       className={`text-xs font-semibold ${
-                        tarefa.status === "ATRASADA"
+                        tarefa.statusCalculado === "ATRASADA"
                           ? "text-red-600"
                           : "text-gray-600"
                       }`}
                     >
-                      {tarefa.prazo ? formatarTempoRelativo(tarefa.prazo) : "-"}
+                      {tarefa.prazo
+                        ? formatarTempoRelativo(new Date(tarefa.prazo))
+                        : "-"}
                     </p>
                   </div>
                 ))}

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -95,8 +95,8 @@ model Utilizador {
   passwordHash  String
   anoEscolar    String?  // e.g. "10º Ano", "2º Ano Universitário"
   curso         String?
-  bio           String?
-  avatarUrl     String?
+  bio           String?  @db.Text
+  avatarUrl     String?  @db.VarChar(2048)
   onboardingFeito Boolean @default(false)
   anoLectivoInicio DateTime?
   anoLectivoFim    DateTime?
@@ -135,7 +135,7 @@ model Disciplina {
   cor         String   // hex color chosen by student e.g. "#185FA5"
   professor   String?
   sala        String?
-  notas       String?  // free text notes about the subject
+  notas       String?  @db.Text // free text notes about the subject
   ordem       Int      @default(0) // for custom ordering
   ativo       Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -171,7 +171,7 @@ model Aula {
   dataInicio   DateTime? // for one-time or quinzenal classes
   dataFim      DateTime? // optional end date for the recurrence
   cor          String?  // overrides disciplina.cor if set
-  notas        String?
+  notas        String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -191,7 +191,7 @@ model Tarefa {
   disciplinaId String?
   disciplina   Disciplina?      @relation(fields: [disciplinaId], references: [id], onDelete: SetNull)
   titulo       String
-  descricao    String?
+  descricao    String?  @db.Text
   prazo        DateTime?
   prioridade   PrioridadeTarefa @default(MEDIA)
   status       StatusTarefa     @default(PENDENTE)
@@ -221,7 +221,7 @@ model Evento {
   dataInicio   DateTime
   dataFim      DateTime?  // null = single day event
   diaInteiro   Boolean    @default(false)
-  notas        String?
+  notas        String?  @db.Text
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -242,7 +242,7 @@ model Avaliacao {
   data         DateTime
   nota         Float?        // 0–20, null if not yet graded
   peso         Float         @default(1.0) // weight for average calculation
-  observacoes  String?
+  observacoes  String?  @db.Text
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -279,7 +279,7 @@ model Apontamento {
   tarefaId     String?
   tarefa       Tarefa?     @relation("ApontamentoTarefa", fields: [tarefaId], references: [id], onDelete: SetNull)
   titulo       String      @default("Sem título")
-  conteudo     String?     // rich text stored as HTML or markdown
+  conteudo     String?     @db.LongText // rich text stored as HTML or markdown
   tipo         String      @default("LIVRE")
   fixado       Boolean     @default(false)
   createdAt    DateTime    @default(now())
@@ -298,7 +298,7 @@ model Objectivo {
   utilizadorId String
   utilizador   Utilizador         @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
   titulo       String
-  descricao    String?
+  descricao    String?  @db.Text
   categoria    CategoriaObjectivo
   prazo        DateTime?
   status       StatusObjectivo    @default(ACTIVO)
@@ -338,7 +338,7 @@ model SessaoEstudo {
   status       StatusSessaoEstudo @default(EM_CURSO)
   iniciadaEm   DateTime           @default(now())
   terminadaEm  DateTime?
-  notas        String?
+  notas        String?  @db.Text
 
   @@index([utilizadorId, iniciadaEm])
 }
@@ -355,7 +355,7 @@ model Lembrete {
   titulo       String
   dataHora     DateTime
   repetir      RepetirLembrete @default(NUNCA)
-  notas        String?
+  notas        String?  @db.Text
   concluido    Boolean         @default(false)
   concluidoEm  DateTime?
   createdAt    DateTime        @default(now())
@@ -373,7 +373,7 @@ model NotificacaoApp {
   utilizadorId String
   utilizador   Utilizador @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
   titulo       String
-  mensagem     String
+  mensagem     String     @db.Text
   tipo         String     // TAREFA | LEMBRETE | OBJECTIVO | SESSAO | SISTEMA
   lida         Boolean    @default(false)
   url          String?    // deep link to relevant page

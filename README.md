@@ -2,6 +2,28 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+## Database
+
+The Prisma datasource is configured for MySQL.
+
+Set `DATABASE_URL` with a MySQL connection string before running Prisma commands:
+
+```bash
+DATABASE_URL="mysql://user:password@localhost:3306/studypp"
+```
+
+After configuring the database, apply the schema with:
+
+```bash
+npx prisma db push
+```
+
+Then generate the Prisma Client:
+
+```bash
+npx prisma generate
+```
+
 First, run the development server:
 
 ```bash

@@ -1,2 +1,8 @@
-// Placeholder para CRUD de notas
-// TODO: Implementar endpoints GET, POST, PUT, DELETE
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({
+    success: false,
+    error: "Endpoint de notas ainda nao implementado.",
+  }, { status: 501 });
+}

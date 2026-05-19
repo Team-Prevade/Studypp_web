@@ -64,7 +64,7 @@ export default function LoginPage() {
           </div>
           <div className="flex-1">
             <p className="text-blue-50 italic text-base font-light leading-relaxed">
-              "A melhor ferramenta para o meu semestre"
+              &ldquo;A melhor ferramenta para o meu semestre&rdquo;
             </p>
             <p className="text-blue-300 text-sm font-medium mt-1">
               Maria João, Estudante de Design

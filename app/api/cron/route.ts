@@ -1,2 +1,8 @@
-// Placeholder para jobs cronométricos
-// TODO: Implementar jobs para lembretes, expiração de dados, etc.
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({
+    success: true,
+    message: "Cron endpoint ativo. Nenhum job configurado ainda.",
+  });
+}

@@ -84,6 +84,16 @@ enum RepetirAula {
   QUINZENAL
 }
 
+enum ApontamentoShareVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum ApontamentoSharePermission {
+  READ
+  WRITE
+}
+
 // ═══════════════════════════════════════════
 // UTILIZADOR
 // ═══════════════════════════════════════════
@@ -115,6 +125,7 @@ model Utilizador {
   eventos          Evento[]
   notas            Nota[]
   apontamentos     Apontamento[]
+  apontamentosPartilhados ApontamentoShareParticipant[]
   objectivos       Objectivo[]
   sessoesEstudo    SessaoEstudo[]
   lembretes        Lembrete[]
@@ -274,6 +285,7 @@ model Apontamento {
   parentId     String?
   parent       Apontamento? @relation("SubApontamentos", fields: [parentId], references: [id], onDelete: Cascade)
   subNotas     Apontamento[] @relation("SubApontamentos")
+  share        ApontamentoShare?
   aulaId       String?
   aula         Aula?       @relation("ApontamentoAula", fields: [aulaId], references: [id], onDelete: SetNull)
   tarefaId     String?
@@ -287,6 +299,36 @@ model Apontamento {
 
   @@index([utilizadorId, parentId])
   @@index([utilizadorId, updatedAt])
+}
+
+model ApontamentoShare {
+  id               String                      @id @default(cuid())
+  apontamentoId    String                      @unique
+  apontamento      Apontamento                 @relation(fields: [apontamentoId], references: [id], onDelete: Cascade)
+  token            String                      @unique
+  enabled          Boolean                     @default(false)
+  visibility       ApontamentoShareVisibility  @default(PRIVATE)
+  publicPermission ApontamentoSharePermission  @default(READ)
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+
+  participants     ApontamentoShareParticipant[]
+
+  @@index([enabled, visibility])
+}
+
+model ApontamentoShareParticipant {
+  id           String                     @id @default(cuid())
+  shareId      String
+  share        ApontamentoShare           @relation(fields: [shareId], references: [id], onDelete: Cascade)
+  utilizadorId String
+  utilizador   Utilizador                 @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  permission   ApontamentoSharePermission @default(READ)
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  @@unique([shareId, utilizadorId])
+  @@index([utilizadorId])
 }
 
 // ═══════════════════════════════════════════

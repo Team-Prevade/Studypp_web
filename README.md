@@ -24,6 +24,23 @@ Then generate the Prisma Client:
 npx prisma generate
 ```
 
+## Collaborative notes
+
+Real-time collaborative editing uses a separate Hocuspocus/Yjs WebSocket server.
+
+Run it alongside Next.js during development:
+
+```bash
+npm run dev:collab
+```
+
+The editor connects to `ws://localhost:1234` by default. In production, set:
+
+```bash
+NEXT_PUBLIC_COLLAB_WS_URL="wss://your-collaboration-host"
+COLLAB_PORT="1234"
+```
+
 First, run the development server:
 
 ```bash

@@ -61,7 +61,7 @@ export default function RegisterPage() {
           </div>
           <div className="flex-1">
             <p className="text-base font-light italic leading-relaxed text-blue-50">
-              "Finalmente consegui organizar-me!"
+              &ldquo;Finalmente consegui organizar-me!&rdquo;
             </p>
             <p className="mt-1 text-sm font-medium text-blue-300">
               João Silva, Aluno de Engenharia

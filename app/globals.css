@@ -373,6 +373,67 @@ body {
   pointer-events: none;
 }
 
+.studypp-shared-editor {
+  color: #111827;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.studypp-shared-editor h1,
+.studypp-shared-editor h2,
+.studypp-shared-editor h3 {
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.studypp-shared-editor h1 { font-size: 2rem; }
+.studypp-shared-editor h2 { font-size: 1.5rem; }
+.studypp-shared-editor h3 { font-size: 1.25rem; }
+
+.studypp-shared-editor p {
+  margin: 0.7rem 0;
+}
+
+.studypp-shared-editor ul,
+.studypp-shared-editor ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.studypp-shared-editor blockquote {
+  border-left: 3px solid #0f766e;
+  color: #475569;
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+
+.studypp-shared-editor .collaboration-caret__caret {
+  border-left: 2px solid var(--collaboration-caret-color);
+  border-right: 2px solid var(--collaboration-caret-color);
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+.studypp-shared-editor .collaboration-caret__label {
+  background-color: var(--collaboration-caret-color);
+  border-radius: 0.35rem 0.35rem 0.35rem 0;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  left: -2px;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  position: absolute;
+  top: -1.35rem;
+  user-select: none;
+  white-space: nowrap;
+}
+
 @keyframes confetti-burst {
   0% {
     opacity: 0;

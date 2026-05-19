@@ -25,6 +25,7 @@ import {
   Highlighter,
   Image as ImageIcon,
   Italic,
+  Link2,
   List,
   ListChecks,
   ListOrdered,
@@ -35,8 +36,11 @@ import {
   Quote,
   Save,
   Search,
+  Share2,
   Trash2,
   Underline as UnderlineIcon,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -92,6 +96,21 @@ interface ApontamentosViewProps {
 
 type SortMode = "recentes" | "alfabetica" | "disciplina";
 type SaveState = "idle" | "dirty" | "saving";
+type SharePermission = "READ" | "WRITE";
+type ShareVisibility = "PRIVATE" | "PUBLIC";
+
+type ShareState = {
+  id: string;
+  token: string;
+  enabled: boolean;
+  visibility: ShareVisibility;
+  publicPermission: SharePermission;
+  participants: Array<{
+    id: string;
+    permission: SharePermission;
+    utilizador: { id: string; nome: string; email: string };
+  }>;
+} | null;
 
 const emptyContent = "<p></p>";
 const lowlight = createLowlight(common);
@@ -411,6 +430,11 @@ function ApontamentosClientView({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(firstSelected?.updatedAt ?? null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [share, setShare] = useState<ShareState>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [participantEmail, setParticipantEmail] = useState("");
+  const [participantPermission, setParticipantPermission] = useState<SharePermission>("READ");
 
   const selected = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -527,6 +551,64 @@ function ApontamentosClientView({
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, [items]);
+
+  useEffect(() => {
+    if (!selected || saveState !== "idle") return;
+
+    let cancelled = false;
+    const refreshSelected = async () => {
+      try {
+        const response = await fetch(`/api/apontamentos/${selected.id}`, {
+          cache: "no-store",
+        });
+        const result = (await response.json().catch(() => null)) as
+          | {
+              success?: boolean;
+              apontamento?: {
+                id: string;
+                titulo: string;
+                conteudo: string | null;
+                updatedAt: string;
+              };
+            }
+          | null;
+
+        if (cancelled || !response.ok || !result?.success || !result.apontamento) return;
+
+        const remote = result.apontamento;
+        const remoteUpdatedAt = new Date(remote.updatedAt).getTime();
+        const localUpdatedAt = new Date(selected.updatedAt).getTime();
+        if (!Number.isFinite(remoteUpdatedAt) || remoteUpdatedAt <= localUpdatedAt) return;
+
+        setItems((current) =>
+          sortNotes(
+            current.map((item) =>
+              item.id === remote.id
+                ? {
+                    ...item,
+                    titulo: remote.titulo,
+                    conteudo: remote.conteudo,
+                    updatedAt: remote.updatedAt,
+                  }
+                : item,
+            ),
+            sortMode,
+          ),
+        );
+        setTitle(remote.titulo);
+        setLastSavedAt(remote.updatedAt);
+        editor?.commands.setContent(remote.conteudo || emptyContent, { emitUpdate: false });
+      } catch {
+        // Silent polling keeps navigation/editor feedback calm when the connection is intermittent.
+      }
+    };
+
+    const interval = window.setInterval(refreshSelected, 1800);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [editor, saveState, selected, sortMode]);
 
   // Do not reintroduce autosave here unless the user explicitly asks for it.
   // Manual save avoids edit conflicts between title, subject changes, and rich editor updates.
@@ -729,6 +811,133 @@ function ApontamentosClientView({
     toast.success(updated.fixado ? "Apontamento fixado." : "Apontamento removido dos fixados.");
   };
 
+  const shareUrl =
+    typeof window !== "undefined" && share?.token
+      ? `${window.location.origin}/share/apontamentos/${share.token}`
+      : "";
+
+  const loadShare = async (note: Apontamento) => {
+    setShareOpen(true);
+    setShareLoading(true);
+
+    try {
+      const response = await fetch(`/api/apontamentos/${note.id}/share`);
+      const result = (await response.json()) as { success: boolean; share: ShareState; error?: string };
+
+      if (!response.ok || !result.success) {
+        toast.error(result.error || "Nao foi possivel carregar a partilha.");
+        return;
+      }
+
+      setShare(result.share);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const updateShare = async (patch: Partial<NonNullable<ShareState>>) => {
+    if (!selected) return;
+    setShareLoading(true);
+
+    const next = {
+      enabled: patch.enabled ?? share?.enabled ?? true,
+      visibility: patch.visibility ?? share?.visibility ?? "PRIVATE",
+      publicPermission: patch.publicPermission ?? share?.publicPermission ?? "READ",
+    };
+
+    try {
+      const response = await fetch(`/api/apontamentos/${selected.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(next),
+      });
+      const result = (await response.json()) as { success: boolean; share: ShareState; error?: string };
+
+      if (!response.ok || !result.success) {
+        toast.error(result.error || "Nao foi possivel atualizar a partilha.");
+        return;
+      }
+
+      setShare(result.share);
+      toast.success("Partilha atualizada.");
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const copyShareLink = async () => {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    toast.success("Link copiado.");
+  };
+
+  const addParticipant = async () => {
+    if (!selected || !participantEmail.trim()) return;
+    setShareLoading(true);
+
+    try {
+      const response = await fetch(`/api/apontamentos/${selected.id}/share/participants`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: participantEmail,
+          permission: participantPermission,
+        }),
+      });
+      const result = (await response.json()) as {
+        success: boolean;
+        participant?: NonNullable<ShareState>["participants"][number];
+        error?: string;
+      };
+
+      if (!response.ok || !result.success || !result.participant) {
+        toast.error(result.error || "Nao foi possivel adicionar o utilizador.");
+        return;
+      }
+
+      const participant = result.participant;
+      setShare((current) =>
+        current
+          ? {
+              ...current,
+              participants: [
+                ...current.participants.filter((item) => item.id !== participant.id),
+                participant,
+              ],
+            }
+          : current,
+      );
+      setParticipantEmail("");
+      toast.success("Utilizador autorizado.");
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const removeParticipant = async (participantId: string) => {
+    if (!selected) return;
+
+    const response = await fetch(`/api/apontamentos/${selected.id}/share/participants/${participantId}`, {
+      method: "DELETE",
+    });
+    const result = (await response.json()) as { success: boolean; error?: string };
+
+    if (!response.ok || !result.success) {
+      toast.error(result.error || "Nao foi possivel remover o acesso.");
+      return;
+    }
+
+    setShare((current) =>
+      current
+        ? {
+            ...current,
+            participants: current.participants.filter((item) => item.id !== participantId),
+          }
+        : current,
+    );
+    toast.success("Acesso removido.");
+  };
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-gray-50 text-gray-900 lg:flex-row">
       <aside className="flex max-h-[42vh] w-full shrink-0 flex-col border-b border-gray-200 bg-white lg:h-screen lg:max-h-none lg:w-[280px] lg:border-b-0 lg:border-r">
@@ -907,6 +1116,14 @@ function ApontamentosClientView({
                       : lastSavedAt
                         ? `Guardado às ${formatDate(lastSavedAt).split(",").pop()?.trim()}`
                         : ""}</span>
+                  <button
+                    type="button"
+                    onClick={() => loadShare(selected)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    Partilhar
+                  </button>
                   <button
                     type="button"
                     onClick={saveCurrentNote}
@@ -1185,6 +1402,175 @@ function ApontamentosClientView({
             >
               Começar em branco
             </button>
+          </div>
+        </div>
+      ) : null}
+
+      {shareOpen && selected ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/25 px-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Partilhar apontamento</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Controla quem pode abrir e editar &ldquo;{selected.titulo || "Sem titulo"}&rdquo;.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShareOpen(false)}
+                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Fechar partilha"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {shareLoading && !share ? (
+              <p className="rounded-lg bg-gray-50 p-4 text-sm text-gray-500">A preparar partilha...</p>
+            ) : (
+              <div className="space-y-5">
+                <section className="rounded-xl border border-gray-200 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Link de partilha</p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Desativa o link a qualquer momento para revogar o acesso externo.
+                      </p>
+                    </div>
+                    <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={share?.enabled ?? false}
+                        onChange={(event) => updateShare({ enabled: event.target.checked })}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      Link ativo
+                    </label>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      value={shareUrl}
+                      readOnly
+                      placeholder="Ativa a partilha para gerar o link"
+                      className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                    />
+                    <button
+                      type="button"
+                      onClick={copyShareLink}
+                      disabled={!shareUrl}
+                      className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Link2 className="h-4 w-4" />
+                      Copiar
+                    </button>
+                  </div>
+                </section>
+
+                <section className="grid gap-4 sm:grid-cols-2">
+                  <label className="block rounded-xl border border-gray-200 p-4">
+                    <span className="text-sm font-semibold text-gray-900">Tipo de acesso</span>
+                    <select
+                      value={share?.visibility ?? "PRIVATE"}
+                      onChange={(event) => updateShare({ visibility: event.target.value as ShareVisibility })}
+                      className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="PRIVATE">Privado</option>
+                      <option value="PUBLIC">Publico com link</option>
+                    </select>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Privado exige utilizadores autorizados. Publico permite convidados sem conta.
+                    </p>
+                  </label>
+
+                  <label className="block rounded-xl border border-gray-200 p-4">
+                    <span className="text-sm font-semibold text-gray-900">Permissao publica</span>
+                    <select
+                      value={share?.publicPermission ?? "READ"}
+                      onChange={(event) =>
+                        updateShare({ publicPermission: event.target.value as SharePermission })
+                      }
+                      disabled={share?.visibility !== "PUBLIC"}
+                      className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                      <option value="READ">Apenas leitura</option>
+                      <option value="WRITE">Pode editar</option>
+                    </select>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Esta permissao afeta guests e qualquer pessoa com o link publico.
+                    </p>
+                  </label>
+                </section>
+
+                <section className="rounded-xl border border-gray-200 p-4">
+                  <div className="mb-3">
+                    <p className="text-sm font-semibold text-gray-900">Utilizadores autorizados</p>
+                    <p className="mt-1 text-xs text-gray-500">Usado quando a partilha esta em modo privado.</p>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                    <input
+                      value={participantEmail}
+                      onChange={(event) => setParticipantEmail(event.target.value)}
+                      placeholder="email@exemplo.com"
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <select
+                      value={participantPermission}
+                      onChange={(event) => setParticipantPermission(event.target.value as SharePermission)}
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="READ">Leitura</option>
+                      <option value="WRITE">Edicao</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={addParticipant}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-700 px-3 py-2 text-sm font-medium text-white hover:bg-teal-800"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Adicionar
+                    </button>
+                  </div>
+
+                  <div className="mt-4 space-y-2">
+                    {share?.participants.length ? (
+                      share.participants.map((participant) => (
+                        <div
+                          key={participant.id}
+                          className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-gray-800">
+                              {participant.utilizador.nome}
+                            </p>
+                            <p className="truncate text-xs text-gray-500">{participant.utilizador.email}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="rounded-full bg-white px-2 py-1 text-xs text-gray-600">
+                              {participant.permission === "WRITE" ? "Edicao" : "Leitura"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeParticipant(participant.id)}
+                              className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                              aria-label="Remover acesso"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500">
+                        Ainda nao ha utilizadores privados autorizados.
+                      </p>
+                    )}
+                  </div>
+                </section>
+              </div>
+            )}
           </div>
         </div>
       ) : null}

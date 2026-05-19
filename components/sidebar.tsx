@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   Calendar,
@@ -39,13 +39,42 @@ const menuItems = [
 ];
 
 export function Sidebar() {
+  const router = useRouter();
   const pathname = usePathname();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    const prefetch = () => {
+      [...menuItems.map((item) => item.href), "/perfil", "/definicoes"].forEach((href) => {
+        router.prefetch(href);
+      });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleId = window.requestIdleCallback(prefetch, { timeout: 1500 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(prefetch, 700);
+    return () => globalThis.clearTimeout(timeoutId);
+  }, [router]);
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   const closeMenus = () => {
     setIsAccountMenuOpen(false);
     setIsMobileOpen(false);
+  };
+
+  const handleNavigate = (href: string) => {
+    closeMenus();
+    if (href !== pathname) {
+      setPendingHref(href);
+    }
   };
 
   return (
@@ -116,7 +145,9 @@ export function Sidebar() {
               <div className="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-blue-600 bg-blue-950 p-1 shadow-lg">
                 <Link
                   href="/perfil"
-                  onClick={closeMenus}
+                  onMouseEnter={() => router.prefetch("/perfil")}
+                  onFocus={() => router.prefetch("/perfil")}
+                  onClick={() => handleNavigate("/perfil")}
                   className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-800"
                 >
                   <User className="h-4 w-4" />
@@ -124,7 +155,9 @@ export function Sidebar() {
                 </Link>
                 <Link
                   href="/definicoes"
-                  onClick={closeMenus}
+                  onMouseEnter={() => router.prefetch("/definicoes")}
+                  onFocus={() => router.prefetch("/definicoes")}
+                  onClick={() => handleNavigate("/definicoes")}
                   className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-blue-100 transition-colors hover:bg-blue-800"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
@@ -158,13 +191,21 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              onClick={closeMenus}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
+              onMouseEnter={() => router.prefetch(item.href)}
+              onFocus={() => router.prefetch(item.href)}
+              onClick={() => handleNavigate(item.href)}
+              aria-busy={pendingHref === item.href}
+              className={`relative flex items-center gap-3 overflow-hidden rounded-lg px-4 py-3 transition-colors ${
+                pendingHref === item.href
+                  ? "bg-white/15 text-white font-semibold"
+                  : isActive
                   ? "bg-white text-blue-900 font-semibold"
                   : "text-blue-100 hover:bg-blue-700/50"
               }`}
             >
+              {pendingHref === item.href ? (
+                <span className="absolute inset-y-0 left-0 w-1 rounded-r-full bg-white/80" />
+              ) : null}
               <Icon className="w-5 h-5" />
               <span className="text-sm">{item.label}</span>
             </Link>

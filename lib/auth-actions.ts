@@ -1,50 +1,39 @@
 "use server";
 
-import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
-import { AuthError } from "next-auth";
+import { clearSession, createSession } from "@/auth";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { normalizeAuthEmail } from "@/lib/password-auth";
+import { authenticateWithPassword, normalizeAuthEmail } from "@/lib/password-auth";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 
 export async function loginAction(email: string, password: string) {
   try {
-    const normalizedEmail = normalizeAuthEmail(email);
-    const result = await authSignIn("credentials", {
-      email: normalizedEmail,
-      password,
-      redirect: false,
-    });
+    const user = await authenticateWithPassword(email, password);
 
-    if (!result || !result.ok) {
+    if (!user) {
       return {
         success: false,
         error: "Email ou palavra-passe incorretos",
       };
     }
 
-    // Check if onboarding is done
-    const user = await prisma.utilizador.findUnique({
-      where: { email: normalizedEmail },
+    await createSession({
+      id: user.id,
+      email: user.email,
+      name: user.nome,
     });
 
-    if (!user?.onboardingFeito) {
+    if (!user.onboardingFeito) {
       redirect("/onboarding/perfil");
-    } else {
-      redirect("/dashboard");
     }
+
+    redirect("/dashboard");
   } catch (error) {
-    // Relançar redirect errors
     if (isRedirectError(error)) {
       throw error;
     }
-    if (error instanceof AuthError && error.type === "CredentialsSignin") {
-      return {
-        success: false,
-        error: "Email ou palavra-passe incorretos",
-      };
-    }
+
     console.error("Login error:", error);
     return {
       success: false,
@@ -61,18 +50,18 @@ export async function registerAction(
 ) {
   try {
     const normalizedEmail = normalizeAuthEmail(email);
-    // Validações
-    if (!nome || !email || !password || !confirmPassword) {
+
+    if (!nome || !normalizedEmail || !password || !confirmPassword) {
       return {
         success: false,
-        error: "Todos os campos são obrigatórios",
+        error: "Todos os campos sao obrigatorios",
       };
     }
 
     if (password !== confirmPassword) {
       return {
         success: false,
-        error: "As palavras-passe não coincidem",
+        error: "As palavras-passe nao coincidem",
       };
     }
 
@@ -83,7 +72,6 @@ export async function registerAction(
       };
     }
 
-    // Verificar se email já existe
     const existingUser = await prisma.utilizador.findUnique({
       where: { email: normalizedEmail },
     });
@@ -91,36 +79,36 @@ export async function registerAction(
     if (existingUser) {
       return {
         success: false,
-        error: "Este email já está registado",
+        error: "Este email ja esta registado",
       };
     }
 
-    // Hash da password
     const passwordHash = await bcrypt.hash(password, 10);
-
-    // Criar utilizador
-    await prisma.utilizador.create({
+    const user = await prisma.utilizador.create({
       data: {
         nome,
         email: normalizedEmail,
         passwordHash,
       },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
     });
 
-    // Fazer login automático
-    await authSignIn("credentials", {
-      email: normalizedEmail,
-      password,
-      redirect: false,
+    await createSession({
+      id: user.id,
+      email: user.email,
+      name: user.nome,
     });
 
-    // Redirect to onboarding
     redirect("/onboarding/perfil");
   } catch (error) {
-    // Relançar redirect errors
     if (isRedirectError(error)) {
       throw error;
     }
+
     console.error("Register error:", error);
     return {
       success: false,
@@ -130,5 +118,6 @@ export async function registerAction(
 }
 
 export async function logoutAction() {
-  await authSignOut({ redirectTo: "/login" });
+  await clearSession();
+  redirect("/login");
 }

@@ -253,13 +253,24 @@ Resposta:
 }
 ```
 
+Efeito visivel na web:
+
+- O snapshot completo continua a ser guardado em `MobileBackup.payload`.
+- Alem disso, o servidor materializa os itens de `data.eventos` nas tabelas da web:
+  - `tipo: "exam"` ou `metadata.category: "prova"` cria um `Evento` de calendario como `TESTE_EXAME`.
+  - `tipo: "task"` ou `metadata.category: "tarefa"` cria uma `Tarefa`.
+  - `tipo: "reminder"` ou `metadata.category: "lembrete"` cria um `Lembrete`.
+- Se `disciplinaServerId` for enviado e pertencer ao utilizador, ele e usado.
+- Se `disciplinaNome` vier preenchido e nao existir ainda para o utilizador, o servidor cria a disciplina com a cor enviada em `metadata.color` ou `#2563EB`.
+- Para evitar duplicados basicos, o servidor ignora itens que ja tenham o mesmo utilizador, titulo e data principal.
+
 Regras importantes:
 
 - O mobile deve enviar IDs locais estaveis.
 - Cada registo deve ter `localId`, `serverId` opcional, `clientCreatedAt`, `clientUpdatedAt` e `deletedAt` opcional.
 - O servidor aceita backups ate 15 MB neste endpoint.
 - Anexos grandes nao devem ir em JSON; devem usar endpoints de upload dedicados.
-- Nesta fase o backup e guardado como snapshot bruto em `MobileBackup.payload`; ele ainda nao faz merge automatico para as tabelas de dominio.
+- Nesta fase o merge automatico completo ainda nao existe. A materializacao cobre apenas eventos, tarefas e lembretes vindos de `data.eventos`.
 
 ## Proximo passo recomendado
 

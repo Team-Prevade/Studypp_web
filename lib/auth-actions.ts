@@ -4,12 +4,13 @@ import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
 import { AuthError } from "next-auth";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { normalizeAuthEmail } from "@/lib/password-auth";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect";
 
 export async function loginAction(email: string, password: string) {
   try {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeAuthEmail(email);
     const result = await authSignIn("credentials", {
       email: normalizedEmail,
       password,
@@ -59,7 +60,7 @@ export async function registerAction(
   confirmPassword: string,
 ) {
   try {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeAuthEmail(email);
     // Validações
     if (!nome || !email || !password || !confirmPassword) {
       return {

@@ -2,17 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { createMobileTokenPair } from "@/lib/mobile-auth";
-
-function readPassword(body: Record<string, unknown>) {
-  return String(body.password ?? body.senha ?? body.palavraPasse ?? "");
-}
+import { normalizeAuthEmail, readPasswordCredential } from "@/lib/password-auth";
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
     const nome = String(body.nome ?? body.name ?? "").trim();
-    const email = String(body.email ?? "").trim().toLowerCase();
-    const password = readPassword(body);
+    const email = normalizeAuthEmail(body.email);
+    const password = readPasswordCredential(body);
     const deviceId = body.deviceId ? String(body.deviceId) : undefined;
 
     if (!nome || !email || !password) {

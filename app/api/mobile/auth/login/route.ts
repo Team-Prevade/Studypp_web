@@ -1,48 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import prisma from "@/lib/prisma";
 import { createMobileTokenPair } from "@/lib/mobile-auth";
-
-function readPassword(body: Record<string, unknown>) {
-  return String(body.password ?? body.senha ?? body.palavraPasse ?? "");
-}
+import {
+  authenticatePayloadWithPassword,
+  normalizeAuthEmail,
+  readPasswordCredential,
+} from "@/lib/password-auth";
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    const email = String(body.email ?? "").trim().toLowerCase();
-    const password = readPassword(body);
+    const email = normalizeAuthEmail(body.email);
+    const password = readPasswordCredential(body);
     const deviceId = body.deviceId ? String(body.deviceId) : undefined;
 
     if (!email || !password) {
-      return NextResponse.json({ success: false, error: "Email e password são obrigatórios" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Email e password/senha sao obrigatorios" },
+        { status: 400 },
+      );
     }
 
-    const user = await prisma.utilizador.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        passwordHash: true,
-        onboardingFeito: true,
-      },
-    });
-
+    const user = await authenticatePayloadWithPassword(body);
     if (!user) {
-      return NextResponse.json({ success: false, error: "Credenciais inválidas" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Credenciais invalidas" },
+        { status: 401 },
+      );
     }
-
-    const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!passwordsMatch) {
-      return NextResponse.json({ success: false, error: "Credenciais inválidas" }, { status: 401 });
-    }
-
-    const { passwordHash: _passwordHash, ...safeUser } = user;
 
     return NextResponse.json({
       success: true,
-      user: safeUser,
+      user,
       tokens: createMobileTokenPair(user, deviceId),
       sync: {
         serverTime: new Date().toISOString(),

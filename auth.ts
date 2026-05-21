@@ -28,18 +28,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const { email, password } = credentials;
+        const email = String(credentials.email ?? "").trim().toLowerCase();
+        const password = String(
+          credentials.password ?? credentials.senha ?? credentials.palavraPasse ?? "",
+        );
 
         if (!email || !password) return null;
 
         const user = await prisma.utilizador.findUnique({
-          where: { email: email as string },
+          where: { email },
         });
 
         if (!user) return null;
 
         const passwordsMatch = await bcrypt.compare(
-          password as string,
+          password,
           user.passwordHash,
         );
 

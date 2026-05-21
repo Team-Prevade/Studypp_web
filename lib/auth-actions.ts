@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn as authSignIn, signOut as authSignOut } from "@/auth";
+import { AuthError } from "next-auth";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
@@ -8,8 +9,9 @@ import { isRedirectError } from "next/dist/client/components/redirect";
 
 export async function loginAction(email: string, password: string) {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     const result = await authSignIn("credentials", {
-      email,
+      email: normalizedEmail,
       password,
       redirect: false,
     });
@@ -23,7 +25,7 @@ export async function loginAction(email: string, password: string) {
 
     // Check if onboarding is done
     const user = await prisma.utilizador.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user?.onboardingFeito) {
@@ -35,6 +37,12 @@ export async function loginAction(email: string, password: string) {
     // Relançar redirect errors
     if (isRedirectError(error)) {
       throw error;
+    }
+    if (error instanceof AuthError && error.type === "CredentialsSignin") {
+      return {
+        success: false,
+        error: "Email ou palavra-passe incorretos",
+      };
     }
     console.error("Login error:", error);
     return {
@@ -51,6 +59,7 @@ export async function registerAction(
   confirmPassword: string,
 ) {
   try {
+    const normalizedEmail = email.trim().toLowerCase();
     // Validações
     if (!nome || !email || !password || !confirmPassword) {
       return {
@@ -75,7 +84,7 @@ export async function registerAction(
 
     // Verificar se email já existe
     const existingUser = await prisma.utilizador.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -92,14 +101,14 @@ export async function registerAction(
     await prisma.utilizador.create({
       data: {
         nome,
-        email,
+        email: normalizedEmail,
         passwordHash,
       },
     });
 
     // Fazer login automático
     await authSignIn("credentials", {
-      email,
+      email: normalizedEmail,
       password,
       redirect: false,
     });

@@ -3,12 +3,16 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import { createMobileTokenPair } from "@/lib/mobile-auth";
 
+function readPassword(body: Record<string, unknown>) {
+  return String(body.password ?? body.senha ?? body.palavraPasse ?? "");
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const nome = String(body.nome || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
-    const password = String(body.password || "");
+    const body = (await request.json()) as Record<string, unknown>;
+    const nome = String(body.nome ?? body.name ?? "").trim();
+    const email = String(body.email ?? "").trim().toLowerCase();
+    const password = readPassword(body);
     const deviceId = body.deviceId ? String(body.deviceId) : undefined;
 
     if (!nome || !email || !password) {

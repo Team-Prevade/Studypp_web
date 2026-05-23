@@ -32,15 +32,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Coluna Esquerda - Azul */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-900 text-white flex-col justify-between p-16">
+      {/* Coluna Esquerda - Branding */}
+      <div className="brand-gradient relative hidden overflow-hidden text-white lg:flex lg:w-1/2 flex-col justify-between p-16">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,12,40,0.15),rgba(10,12,40,0.62))]" />
         {/* Logo */}
-        <div className="mb-2">
+        <div className="relative mb-2">
           <Logo size="md" withText={true} dark={true} />
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="relative flex-1 flex flex-col justify-center">
           <h1 className="text-6xl font-bold leading-tight mb-8 font-sans">
             A tua escola
             <br />
@@ -48,25 +49,25 @@ export default function LoginPage() {
             <br />
             ao teu ritmo
           </h1>
-          <p className="text-lg leading-relaxed text-blue-100 font-light max-w-md">
+          <p className="text-lg leading-relaxed text-white/80 font-light max-w-md">
             Planifica os teus estudos, acompanha os prazos e liberta a tua mente
             para o que realmente importa: aprender.
           </p>
         </div>
 
         {/* Testimonial */}
-        <div className="flex items-center gap-4 pt-8 border-t border-blue-400 border-opacity-30">
+        <div className="relative flex items-center gap-4 pt-8 border-t border-white/20">
           <div className="relative w-16 h-16 shrink-0">
-            <div className="absolute inset-0 rounded-full bg-blue-700 shadow-sm"></div>
-            <div className="absolute inset-1 rounded-full bg-blue-600 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-white/15 shadow-sm"></div>
+            <div className="brand-glass absolute inset-1 rounded-full flex items-center justify-center">
               <span className="text-lg font-bold text-white">MJ</span>
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-blue-50 italic text-base font-light leading-relaxed">
+            <p className="text-white italic text-base font-light leading-relaxed">
               &ldquo;A melhor ferramenta para o meu semestre&rdquo;
             </p>
-            <p className="text-blue-300 text-sm font-medium mt-1">
+            <p className="text-cyan-100/80 text-sm font-medium mt-1">
               Maria João, Estudante de Design
             </p>
           </div>
@@ -81,7 +82,7 @@ export default function LoginPage() {
             <button
               type="button"
               aria-current="page"
-              className="border-b-2 border-blue-600 pb-3 text-lg font-medium text-blue-600"
+              className="border-b-2 border-[#246bff] pb-3 text-lg font-medium text-[#246bff]"
             >
               Entrar
             </button>
@@ -128,7 +129,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 rounded-lg bg-[#eef4ff] border border-[#dce7ff] text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 focus:border-[#246bff] focus:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -144,7 +145,7 @@ export default function LoginPage() {
                 <Link href="/forgot-password">
                   <button
                     type="button"
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-[#246bff] hover:text-[#17134a] font-medium"
                   >
                     Esqueceu a palavra-passe?
                   </button>
@@ -159,7 +160,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-colors pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-lg bg-[#eef4ff] border border-[#dce7ff] text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 focus:border-[#246bff] focus:bg-white transition-colors pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"
@@ -182,7 +183,7 @@ export default function LoginPage() {
                 id="remember"
                 type="checkbox"
                 disabled={isLoading}
-                className="w-4 h-4 text-blue-600 bg-blue-50 border border-blue-200 rounded focus:ring-2 focus:ring-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-4 h-4 text-[#246bff] bg-[#eef4ff] border border-[#dce7ff] rounded focus:ring-2 focus:ring-[#7c2cff]/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <label
                 htmlFor="remember"
@@ -196,7 +197,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+              className="brand-button w-full text-white font-semibold py-3 rounded-lg transition disabled:opacity-60 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

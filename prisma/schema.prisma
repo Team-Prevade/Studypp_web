@@ -131,6 +131,7 @@ model Utilizador {
   lembretes        Lembrete[]
   notificacoes     NotificacaoApp[]
   mobileBackups    MobileBackup[]
+  conversasIA      ConversaIA[]
   preferenciasNotif PreferenciaNotificacao?
 }
 
@@ -428,6 +429,33 @@ model NotificacaoApp {
 // ═══════════════════════════════════════════
 // PREFERÊNCIAS DE NOTIFICAÇÃO
 // ═══════════════════════════════════════════
+
+// HISTORICO DO ASSISTENTE IA
+
+model ConversaIA {
+  id           String      @id @default(cuid())
+  utilizadorId String
+  utilizador   Utilizador  @relation(fields: [utilizadorId], references: [id], onDelete: Cascade)
+  titulo       String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  mensagens    MensagemIA[]
+
+  @@index([utilizadorId, updatedAt])
+}
+
+model MensagemIA {
+  id          String     @id @default(cuid())
+  conversaId  String
+  conversa    ConversaIA @relation(fields: [conversaId], references: [id], onDelete: Cascade)
+  role        String
+  content     String     @db.LongText
+  actions     Json?
+  createdAt   DateTime   @default(now())
+
+  @@index([conversaId, createdAt])
+}
 
 model PreferenciaNotificacao {
   id                      String     @id @default(cuid())

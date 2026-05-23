@@ -10,9 +10,11 @@ Study++ deve sentir-se como um espaço académico calmo, organizado e motivador.
 - **Pessoal:** usar saudações, nomes, disciplinas e progresso do aluno para dar sensação de acompanhamento.
 
 ## Cores
-- **Primary Blue (`#2563eb` / `blue-600`):** acções principais, links, foco de inputs, navegação activa, estados seleccionados.
-- **Deep Study Blue (`#1e3a8a` / `#1e40af`):** sidebar, áreas de autenticação, marca e superfícies institucionais.
-- **Soft Page Background (`#eff6ff` → `#eef2ff`):** fundo principal dos painéis autenticados; usar gradiente suave azul/índigo.
+- **Brand Ink (`#101235` / `#17134a`):** base escura premium da marca; sidebar, auth hero, menus flutuantes e superfícies institucionais.
+- **Brand Violet (`#7c2cff`):** início do gradiente do logotipo; foco de marca, estados activos especiais e destaques de IA.
+- **Brand Blue (`#246bff`):** acções principais, links, foco de inputs, navegação activa e botões primários.
+- **Brand Sky (`#18a7ff`):** final do gradiente do logotipo; detalhes de brilho, progresso, hover e micro-accentos.
+- **Soft Brand Background (`#eef4ff`):** fundo de inputs, painéis subtis e destaques leves ligados à marca.
 - **Surface (`#ffffff`):** cartões, formulários, modais, listas e áreas de calendário.
 - **Text Strong (`#111827` / `gray-900`):** títulos, números, nomes de disciplinas e conteúdo principal.
 - **Text Muted (`#4b5563` / `gray-600`):** descrições, datas, labels secundárias e microcopy.
@@ -48,11 +50,11 @@ Study++ deve sentir-se como um espaço académico calmo, organizado e motivador.
 - **Bordas coloridas:** usar `border-l-4` para métricas, disciplinas, objectivos e listas com categoria.
 
 ## Componentes
-- **Botão primário:** azul ou teal sólido, texto branco, `rounded-lg`, 40-48px de altura, ícone à esquerda quando a acção cria/adiciona.
+- **Botão primário:** gradiente Brand Violet → Brand Blue → Brand Sky, texto branco, `rounded-lg`, 40-48px de altura, ícone à esquerda quando a acção cria/adiciona.
 - **Botão secundário:** branco ou `gray-50`, borda `gray-300`, texto `gray-700`, hover suave.
 - **Botão destrutivo:** ícone discreto em cinzento por padrão; hover vermelho com fundo vermelho claro.
 - **Icon buttons:** usar lucide-react; tamanho comum 16-24px; sempre com área clicável confortável.
-- **Inputs:** `rounded-lg`, padding horizontal 12-16px, fundo `blue-50` em auth/settings ou branco em formulários internos, foco com ring/borda azul.
+- **Inputs:** `rounded-lg`, padding horizontal 12-16px, fundo `#eef4ff` em auth/settings ou branco em formulários internos, foco com ring violeta suave e borda Brand Blue.
 - **Tabs e filtros:** controlos segmentados com estado activo sólido ou cartão branco com sombra leve.
 - **Badges:** `rounded-full`, texto 12px, cores semânticas. Usar para prioridade, status, categoria, prazo e contagem.
 - **Cards de métrica:** label pequeno, número grande, ícone no canto, acento colorido à esquerda.
@@ -62,9 +64,10 @@ Study++ deve sentir-se como um espaço académico calmo, organizado e motivador.
 - **Estados vazios:** cartão branco com padding amplo, ícone opcional em cinzento, uma frase curta e útil.
 
 ## Navegação
-- A sidebar é a âncora visual do produto: gradiente azul escuro, texto branco, item activo em branco com texto azul escuro.
-- Os itens devem usar ícone + label, alinhamento consistente e hover `blue-700/50`.
-- O nome Study++ e o ícone de livro devem permanecer visíveis no topo.
+- A sidebar é a âncora visual do produto: gradiente escuro Brand Ink com luz violeta/azul, texto branco, item activo em branco com texto Brand Ink.
+- Os itens devem usar ícone + label, alinhamento consistente e hover `white/10`.
+- Na sidebar, usar apenas o símbolo oficial em `public/brand/logo-mark.svg`, sem texto, como assinatura visual compacta.
+- Em telas de autenticação/onboarding, o texto Study++ pode acompanhar o símbolo quando houver espaço.
 - Logout fica no fim da sidebar e deve parecer uma acção secundária, não competir com navegação.
 
 ## Dados e Visualização

@@ -35,35 +35,36 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen bg-white">
-      <div className="hidden flex-col justify-between bg-blue-900 p-16 text-white lg:flex lg:w-1/2">
-        <div className="mb-2">
+      <div className="brand-gradient relative hidden overflow-hidden flex-col justify-between p-16 text-white lg:flex lg:w-1/2">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(10,12,40,0.12),rgba(10,12,40,0.64))]" />
+        <div className="relative mb-2">
           <Logo size="md" withText={true} dark={true} />
         </div>
 
-        <div className="flex flex-1 flex-col justify-center">
+        <div className="relative flex flex-1 flex-col justify-center">
           <h1 className="mb-8 font-sans text-6xl font-bold leading-tight">
             Começa agora
             <br />a organizar
             <br />
             os teus estudos
           </h1>
-          <p className="max-w-md text-lg font-light leading-relaxed text-blue-100">
+          <p className="max-w-md text-lg font-light leading-relaxed text-white/80">
             Junta-te aos estudantes que já transformaram a sua forma de estudar.
           </p>
         </div>
 
-        <div className="flex items-center gap-4 border-t border-blue-400/30 pt-8">
+        <div className="relative flex items-center gap-4 border-t border-white/20 pt-8">
           <div className="relative h-16 w-16 shrink-0">
-            <div className="absolute inset-0 rounded-full bg-blue-700 shadow-sm"></div>
-            <div className="absolute inset-1 flex items-center justify-center rounded-full bg-blue-600">
+            <div className="absolute inset-0 rounded-full bg-white/15 shadow-sm"></div>
+            <div className="brand-glass absolute inset-1 flex items-center justify-center rounded-full">
               <span className="text-lg font-bold text-white">JS</span>
             </div>
           </div>
           <div className="flex-1">
-            <p className="text-base font-light italic leading-relaxed text-blue-50">
+            <p className="text-base font-light italic leading-relaxed text-white">
               &ldquo;Finalmente consegui organizar-me!&rdquo;
             </p>
-            <p className="mt-1 text-sm font-medium text-blue-300">
+            <p className="mt-1 text-sm font-medium text-cyan-100/80">
               João Silva, Aluno de Engenharia
             </p>
           </div>
@@ -82,7 +83,7 @@ export default function RegisterPage() {
             <button
               type="button"
               aria-current="page"
-              className="border-b-2 border-blue-600 pb-3 text-lg font-medium text-blue-600"
+              className="border-b-2 border-[#246bff] pb-3 text-lg font-medium text-[#246bff]"
             >
               Criar conta
             </button>
@@ -116,7 +117,7 @@ export default function RegisterPage() {
                 onChange={(e) => setNome(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-lg border border-[#dce7ff] bg-[#eef4ff] px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:border-[#246bff] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -132,7 +133,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-lg border border-[#dce7ff] bg-[#eef4ff] px-4 py-3 text-gray-900 placeholder-gray-500 transition-colors focus:border-[#246bff] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
@@ -149,7 +150,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg border border-[#dce7ff] bg-[#eef4ff] px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:border-[#246bff] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -176,7 +177,7 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="w-full rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg border border-[#dce7ff] bg-[#eef4ff] px-4 py-3 pr-12 text-gray-900 placeholder-gray-500 transition-colors focus:border-[#246bff] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7c2cff]/25 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -193,7 +194,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+              className="brand-button flex w-full items-center justify-center gap-2 rounded-lg py-3 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isLoading ? (
                 <>

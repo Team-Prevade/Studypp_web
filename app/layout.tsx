@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: "Study++",
   description: "A tua escola organizada, ao teu ritmo",
   icons: {
-    icon: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: "/brand/logo-mark.svg",
+    apple: "/brand/logo.jpeg",
   },
 };
 

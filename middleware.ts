@@ -11,6 +11,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/forgot-password");
   const isProtectedPage =
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/assistente") ||
     pathname.startsWith("/horario") ||
     pathname.startsWith("/calendario") ||
     pathname.startsWith("/tarefas") ||

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
+import Image from "next/image";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
@@ -13,10 +13,10 @@ export function Logo({
   withText = true,
   dark = false,
 }: LogoProps) {
-  const sizeClasses = {
-    sm: "w-6 h-6",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
+  const iconClasses = {
+    sm: "h-9 w-8",
+    md: "h-12 w-10",
+    lg: "h-16 w-14",
   };
 
   const textClasses = {
@@ -26,25 +26,34 @@ export function Logo({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`rounded-lg p-1.5 ${
-          dark
-            ? "bg-white/20 backdrop-blur-sm"
-            : "bg-gradient-to-br from-blue-600 to-blue-700"
-        }`}
+    <div className="flex items-center gap-3">
+      <span
+        className={`${iconClasses[size]} relative block shrink-0`}
       >
-        <BookOpen
-          className={`${sizeClasses[size]} ${dark ? "text-white" : "text-white"}`}
-          strokeWidth={2.5}
+        <Image
+          src="/brand/logo-mark.svg"
+          alt="Study++"
+          fill
+          priority={size !== "sm"}
+          sizes={size === "lg" ? "56px" : size === "md" ? "40px" : "32px"}
+          className="object-contain"
         />
-      </div>
+      </span>
+
       {withText && (
         <span
-          className={`${textClasses[size]} font-bold ${dark ? "text-white" : "text-gray-900"}`}
+          className={`${textClasses[size]} font-black tracking-tight ${dark ? "text-white" : "text-gray-950"}`}
         >
           Study
-          <span className={dark ? "text-white/80" : "text-blue-600"}>++</span>
+          <span
+            className={
+              dark
+                ? "bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text text-transparent"
+                : "bg-gradient-to-r from-[#7c2cff] via-[#246bff] to-[#18a7ff] bg-clip-text text-transparent"
+            }
+          >
+            ++
+          </span>
         </span>
       )}
     </div>

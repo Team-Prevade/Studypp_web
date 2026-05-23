@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { Node, mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -29,6 +29,7 @@ import {
   List,
   ListChecks,
   ListOrdered,
+  Loader2,
   NotebookText,
   Paperclip,
   Pin,
@@ -37,6 +38,7 @@ import {
   Save,
   Search,
   Share2,
+  Sparkles,
   Trash2,
   Underline as UnderlineIcon,
   UserPlus,
@@ -435,6 +437,11 @@ function ApontamentosClientView({
   const [shareLoading, setShareLoading] = useState(false);
   const [participantEmail, setParticipantEmail] = useState("");
   const [participantPermission, setParticipantPermission] = useState<SharePermission>("READ");
+  const [inlineSuggestion, setInlineSuggestion] = useState<{ text: string; top: number; left: number } | null>(null);
+  const [isInlineSuggesting, setIsInlineSuggesting] = useState(false);
+  const [summaryAction, setSummaryAction] = useState<{ text: string; top: number; left: number; from: number; to: number } | null>(null);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const suggestionRequestRef = useRef(0);
 
   const selected = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -513,12 +520,150 @@ function ApontamentosClientView({
     setTarefaId(selected.tarefa?.id ?? "");
     setLastSavedAt(selected.updatedAt);
     setSaveState("idle");
+    setInlineSuggestion(null);
+    setSummaryAction(null);
     editor?.commands.setContent(selected.conteudo || emptyContent, { emitUpdate: false });
   }, [editor, selected]);
 
   useEffect(() => {
     setItems((current) => sortNotes(current, sortMode));
   }, [sortMode]);
+
+  const cleanSuggestionText = (value: string) => {
+    const words = value
+      .replace(/[*_`>#-]/g, "")
+      .replace(/^["'“”‘’]+|["'“”‘’.,;:!?]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .filter(Boolean);
+    return words.slice(0, 12).join(" ");
+  };
+
+  const acceptInlineSuggestion = useCallback(() => {
+    if (!editor || !inlineSuggestion?.text) return;
+    const { from } = editor.state.selection;
+    const previousChar = from > 1 ? editor.state.doc.textBetween(from - 1, from) : "";
+    const needsSpace = previousChar && !/\s/.test(previousChar) && !/^[,.;:!?]/.test(inlineSuggestion.text);
+    editor.chain().focus().insertContent(`${needsSpace ? " " : ""}${inlineSuggestion.text}`).run();
+    setInlineSuggestion(null);
+  }, [editor, inlineSuggestion]);
+
+  const summarizeSelection = async () => {
+    if (!editor || !summaryAction?.text || isSummarizing) return;
+    setIsSummarizing(true);
+    try {
+      const response = await fetch("/api/ia/resumo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: summaryAction.text }),
+      });
+      const data = (await response.json()) as { success?: boolean; summary?: string; error?: string };
+      if (!response.ok || !data.success || !data.summary) {
+        throw new Error(data.error || "Não foi possível resumir a seleção.");
+      }
+
+      const summary = data.summary.replace(/\s+/g, " ").trim();
+      editor.chain().focus().setTextSelection({ from: summaryAction.from, to: summaryAction.to }).insertContent(summary).run();
+      setSummaryAction(null);
+      toast.success("Resumo inserido.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao resumir seleção.");
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!editor) return;
+
+    let debounceId: number | undefined;
+
+    const placeSummaryAction = () => {
+      const { from, to } = editor.state.selection;
+      if (from === to) {
+        setSummaryAction(null);
+        return;
+      }
+
+      const text = editor.state.doc.textBetween(from, to, " ").trim();
+      if (!text) {
+        setSummaryAction(null);
+        return;
+      }
+
+      const coords = editor.view.coordsAtPos(to);
+      setInlineSuggestion(null);
+      setSummaryAction({
+        text,
+        from,
+        to,
+        left: Math.min(coords.left, window.innerWidth - 180),
+        top: coords.bottom + 8,
+      });
+    };
+
+    const requestSuggestion = () => {
+      window.clearTimeout(debounceId);
+      setInlineSuggestion(null);
+
+      const { from, to } = editor.state.selection;
+      if (from !== to || editor.isActive("codeBlock")) return;
+      if (mentionQuery !== null) return;
+
+      const text = editor.getText().trim();
+      if (text.length < 35) return;
+
+      debounceId = window.setTimeout(async () => {
+        const requestId = suggestionRequestRef.current + 1;
+        suggestionRequestRef.current = requestId;
+        setIsInlineSuggesting(true);
+
+        try {
+          const response = await fetch("/api/ia/autocomplete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: text.slice(-2200),
+              intent: "sugerir apenas as proximas 3 a 10 palavras para continuar a frase atual do estudante, sem explicacoes",
+            }),
+          });
+          const data = (await response.json()) as { success?: boolean; suggestion?: string };
+          if (requestId !== suggestionRequestRef.current || !response.ok || !data.success || !data.suggestion) return;
+
+          const suggestion = cleanSuggestionText(data.suggestion);
+          if (!suggestion) return;
+
+          const coords = editor.view.coordsAtPos(editor.state.selection.to);
+          setInlineSuggestion({
+            text: suggestion,
+            left: Math.min(coords.left, window.innerWidth - 360),
+            top: coords.bottom + 8,
+          });
+        } finally {
+          if (requestId === suggestionRequestRef.current) setIsInlineSuggesting(false);
+        }
+      }, 900);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Tab" && inlineSuggestion) {
+        event.preventDefault();
+        acceptInlineSuggestion();
+      }
+    };
+
+    editor.on("update", requestSuggestion);
+    editor.on("selectionUpdate", placeSummaryAction);
+    editor.view.dom.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.clearTimeout(debounceId);
+      editor.off("update", requestSuggestion);
+      editor.off("selectionUpdate", placeSummaryAction);
+      editor.view.dom.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [acceptInlineSuggestion, editor, inlineSuggestion, mentionQuery]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -657,7 +802,7 @@ function ApontamentosClientView({
     });
   }, [filter, items, search, sortMode]);
 
-  const headings = useMemo(() => extractHeadings(editor?.getHTML() || selected?.conteudo || ""), [editor, selected?.conteudo, saveState]);
+  const headings = extractHeadings(editor?.getHTML() || selected?.conteudo || "");
   const selectedDisciplina = disciplinas.find((disciplina) => disciplina.id === disciplinaId) ?? null;
   const parentOptions = items.filter((note) => note.id !== selected?.id);
   const mentionOptions = useMemo(() => {
@@ -1186,6 +1331,48 @@ function ApontamentosClientView({
                 </div>
               ) : null}
               <EditorContent editor={editor} />
+              {inlineSuggestion ? (
+                <button
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    acceptInlineSuggestion();
+                  }}
+                  className="fixed z-50 flex max-w-[360px] items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-left text-sm text-gray-700 shadow-xl shadow-blue-900/10 ring-1 ring-blue-100 transition hover:border-blue-300 hover:bg-blue-50"
+                  style={{ left: inlineSuggestion.left, top: inlineSuggestion.top }}
+                  title="Clique para aceitar a sugestao"
+                >
+                  <Sparkles className="h-4 w-4 shrink-0 text-blue-600" />
+                  <span className="min-w-0 truncate text-gray-700">{inlineSuggestion.text}</span>
+                  <kbd className="ml-1 shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">
+                    Tab
+                  </kbd>
+                </button>
+              ) : isInlineSuggesting ? (
+                <div
+                  className="fixed z-50 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500 shadow-lg ring-1 ring-black/5"
+                  style={{
+                    left: Math.min(window.innerWidth - 220, Math.max(24, summaryAction?.left ?? 360)),
+                    top: summaryAction?.top ?? 180,
+                  }}
+                >
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                  A pensar...
+                </div>
+              ) : null}
+              {summaryAction ? (
+                <button
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={summarizeSelection}
+                  disabled={isSummarizing}
+                  className="fixed z-50 inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 shadow-xl shadow-blue-900/10 ring-1 ring-blue-100 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70"
+                  style={{ left: summaryAction.left, top: summaryAction.top }}
+                >
+                  {isSummarizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  Resumir selecao
+                </button>
+              ) : null}
             </div>
           </div>
         ) : (

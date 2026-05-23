@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, CheckCircle2, User, BookMarked, Clock, Loader2 } from "lucide-react";
+import { CheckCircle2, User, BookMarked, Clock, Loader2 } from "lucide-react";
 import { completeOnboardingAction } from "@/lib/onboarding-actions";
+import { Logo } from "@/components/shared/logo";
 
 const steps = [
   { id: 1, slug: "perfil", label: "Perfil", icon: User },
@@ -44,11 +45,8 @@ export default function OnboardingLayout({
         <div className="relative w-72 bg-white border-r border-gray-200">
           {/* Header */}
           <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">Study++</h1>
+            <div className="mb-8">
+              <Logo size="md" withText={true} />
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-2">
@@ -56,7 +54,7 @@ export default function OnboardingLayout({
               </p>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="brand-button h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(currentStepNumber / 4) * 100}%` }}
                 />
               </div>
@@ -65,7 +63,7 @@ export default function OnboardingLayout({
               type="button"
               onClick={handleSkip}
               disabled={isSkipping}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg border border-[#dce7ff] bg-[#eef4ff] px-4 py-2 text-sm font-semibold text-[#246bff] transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSkipping ? (
                 <>
@@ -91,7 +89,7 @@ export default function OnboardingLayout({
                   href={`/onboarding/${step.slug}`}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     isActive
-                      ? "bg-blue-50 border border-blue-200 text-blue-700"
+                      ? "bg-[#eef4ff] border border-[#dce7ff] text-[#246bff]"
                       : isCompleted
                         ? "text-green-700 hover:bg-green-50"
                         : "text-gray-500 hover:bg-gray-50"
@@ -115,8 +113,8 @@ export default function OnboardingLayout({
 
           {/* Footer Info */}
           <div className="absolute bottom-6 left-6 right-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-              <p className="text-xs text-blue-700 font-medium">
+            <div className="rounded-lg border border-[#dce7ff] bg-[#eef4ff] p-4">
+              <p className="text-xs font-medium text-[#246bff]">
                 Dica: Pode voltar para alterar qualquer informação depois.
               </p>
             </div>
